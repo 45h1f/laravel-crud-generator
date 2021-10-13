@@ -1,0 +1,114 @@
+<?php
+
+namespace {{controllerNamespace}};
+
+use {{modelNamespace}}\{{modelName}};
+use {{requestNamespace}}\{{modelName}}Request;
+use Illuminate\Http\Request;
+use {{repositoryNamespace}}\{{modelName}}Repository;
+
+/**
+ * Class {{modelName}}Controller
+ * @package App\Http\Controllers
+ */
+class {{modelName}}Controller extends Controller
+{
+   protected ${{modelNamePluralLowerCase}}Repository;
+
+   public function __construct({{modelName}}Repository ${{modelNamePluralLowerCase}}Repository)
+   {
+       $this->{{modelNamePluralLowerCase}}Repository = ${{modelNamePluralLowerCase}}Repository;
+   }
+
+
+    /**
+     * Display a listing of the resource.
+     *
+    * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
+     */
+
+    public function index()
+    {
+      ${{modelNamePluralLowerCase}} = $this->{{modelNamePluralLowerCase}}Repository->all();
+
+        return view('{{modelView}}.index', compact('{{modelNamePluralLowerCase}}'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+       * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
+     */
+    public function create()
+    {
+        ${{modelNameLowerCase}} = new {{modelName}}();
+        return view('{{modelView}}.create', compact('{{modelNameLowerCase}}'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function store({{modelName}}Request $request)
+    {
+        $this->{{modelNamePluralLowerCase}}Repository->store($request->validated());
+        return redirect()->route('{{modelRoute}}.index')
+            ->with('success', '{{modelName}} created successfully.');
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     */
+
+    public function show($id)
+    {
+        ${{modelNameLowerCase}} =  $this->{{modelNamePluralLowerCase}}Repository->show($id);
+
+        return view('{{modelView}}.show', compact('{{modelNameLowerCase}}'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+      ${{modelNameLowerCase}} =  $this->{{modelNamePluralLowerCase}}Repository->show($id);
+
+        return view('{{modelView}}.edit', compact('{{modelNameLowerCase}}'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @param  {{modelName}} ${{modelNameLowerCase}}
+     * @return \Illuminate\Http\Response
+     */
+    public function update({{modelName}}Request $request, $id)
+    {
+        $this->{{modelNamePluralLowerCase}}Repository->update($id,$request->validated());
+        return redirect()->route('{{modelRoute}}.index')
+            ->with('success', '{{modelName}} updated successfully');
+    }
+
+    /**
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Exception
+     */
+    public function destroy($id)
+    {
+        ${{modelNameLowerCase}} = {{modelName}}::find($id)->delete();
+
+        return redirect()->route('{{modelRoute}}.index')
+            ->with('success', '{{modelName}} deleted successfully');
+    }
+}

@@ -1,0 +1,34 @@
+<?php
+
+namespace {{repositoryNamespace}};
+
+use {{modelNamespace}}\{{modelName}};
+
+class {{modelName}}Repository
+{
+    public function all()
+    {
+        return {{modelName}}::latest()->paginate(20);;
+    }
+
+    public function store($data)
+    {
+        return {{modelName}}::create($data);
+    }
+
+    public function update($id,$data)
+    {
+        return {{modelName}}::findOrFail($id)->update($data);
+
+    }
+
+    public function show($id)
+    {
+        return {{modelName}}::findOrFail($id);
+    }
+
+    public function delete($id)
+    {
+        return {{modelName}}::findOrFail($id)->delete($id);
+    }
+}
