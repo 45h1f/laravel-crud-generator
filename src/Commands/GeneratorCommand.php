@@ -262,7 +262,7 @@ abstract class GeneratorCommand extends Command
     protected function _getMigrationPath($name)
     {
         $name = strtolower(Str::plural($name));
-        return $this->makeDirectory('database/migrations/create_' . "{$name}_table.php");
+        return $this->makeDirectory('database/migrations/'.date('Y_m_d_hmi_').'create_' . "{$name}_table.php");
 
     }
 
@@ -551,6 +551,8 @@ abstract class GeneratorCommand extends Command
             $type = preg_replace('/[0-9]+/', '', $type);
             if ($type == "varchar") {
                 $type = 'string';
+            } elseif ($type == "int") {
+                $type = 'integer';
             }
             if ($value->Null != 'NO') {
                 $rulesArray[$value->Field]['nullable'] = true;
