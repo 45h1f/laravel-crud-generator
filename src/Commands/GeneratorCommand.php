@@ -125,11 +125,11 @@ abstract class GeneratorCommand extends Command
         parent::__construct();
 
         $this->files = $files;
-        $this->unwantedColumns = config('crud.model.unwantedColumns', $this->unwantedColumns);
-        $this->modelNamespace = config('crud.model.namespace', $this->modelNamespace);
-        $this->repositoryNamespace = config('crud.repository.namespace', $this->repositoryNamespace);
-        $this->requestNamespace = config('crud.request.namespace', $this->requestNamespace);
-        $this->controllerNamespace = config('crud.controller.namespace', $this->controllerNamespace);
+        $this->unwantedColumns = $this->unwantedColumns;
+        $this->modelNamespace = $this->modelNamespace;
+        $this->repositoryNamespace = $this->repositoryNamespace;
+        $this->requestNamespace = $this->requestNamespace;
+        $this->controllerNamespace = $this->controllerNamespace;
         $this->layout = config('crud.layout', $this->layout);
     }
 
