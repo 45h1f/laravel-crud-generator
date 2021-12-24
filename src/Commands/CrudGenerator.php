@@ -3,6 +3,7 @@
 namespace Ashiful\Crud\Commands;
 
 use Illuminate\Support\Str;
+use Nwidart\Modules\Facades\Module;
 
 
 class CrudGenerator extends GeneratorCommand
@@ -14,7 +15,7 @@ class CrudGenerator extends GeneratorCommand
      */
     protected $signature = 'make:crud
                             {name : Table name}
-                            {--route= : Custom route name}';
+                            {module? : Module name}';
 
     /**
      * The console command description.
@@ -35,7 +36,12 @@ class CrudGenerator extends GeneratorCommand
         $this->info('Running Crud Generator ...');
 
         $this->table = $this->getNameInput();
+        $this->module = $this->getModuleInput();
 
+        if (!empty($this->module) && !Module::has($this->module)) {
+            $this->error("`{$this->module}` module not exist");
+            return false;
+        };
         // If table not exist in DB return
         if (!$this->tableExists()) {
             $this->error("`{$this->table}` table not exist");
@@ -46,8 +52,18 @@ class CrudGenerator extends GeneratorCommand
         // Build the class name from table name
         $this->name = $this->_buildClassName();
 
+
+        if (!empty($this->module)) {
+            $this->controllerNamespace = "Modules\\" . $this->module . "\Http\Controllers";
+            $this->modelNamespace = "Modules\\" . $this->module . "\Models";
+            $this->requestNamespace = "Modules\\" . $this->module . "\Http\Requests";
+            $this->repositoryNamespace = "Modules\\" . $this->module . "\Repositories";
+            $this->migratePath = "Modules\\" . $this->module . "\Database\Migrations";
+        };
+
         // Generate the crud
-        $this->buildOptions()
+        $this
+            // ->buildOptions()
             ->buildController()
             ->buildModel()
             ->buildRequest()
@@ -81,7 +97,9 @@ class CrudGenerator extends GeneratorCommand
         $replace = $this->buildReplacements();
 
         $controllerTemplate = str_replace(
-            array_keys($replace), array_values($replace), $this->getStub('Controller')
+            array_keys($replace),
+            array_values($replace),
+            $this->getStub('Controller')
         );
 
         $this->write($controllerPath, $controllerTemplate);
@@ -107,7 +125,9 @@ class CrudGenerator extends GeneratorCommand
         // Make the models attributes and replacement
         $replace = array_merge($this->buildReplacements(), $this->modelReplacements());
         $modelTemplate = str_replace(
-            array_keys($replace), array_values($replace), $this->getStub('Model')
+            array_keys($replace),
+            array_values($replace),
+            $this->getStub('Model')
         );
 
         $this->write($modelPath, $modelTemplate);
@@ -135,7 +155,9 @@ class CrudGenerator extends GeneratorCommand
         $replace = array_merge($this->buildReplacements(), $this->requestReplacements());
 
         $requestTemplate = str_replace(
-            array_keys($replace), array_values($replace), $this->getStub('Request')
+            array_keys($replace),
+            array_values($replace),
+            $this->getStub('Request')
         );
 
         $this->write($requestPath, $requestTemplate);
@@ -163,7 +185,9 @@ class CrudGenerator extends GeneratorCommand
         $replace = $this->buildReplacements();
 
         $requestTemplate = str_replace(
-            array_keys($replace), array_values($replace), $this->getStub('Repository')
+            array_keys($replace),
+            array_values($replace),
+            $this->getStub('Repository')
         );
 
         $this->write($requestPath, $requestTemplate);
@@ -175,8 +199,18 @@ class CrudGenerator extends GeneratorCommand
     protected function buildRoute()
     {
         $name = Str::lower(Str::plural($this->name));
-        $route = 'Route::resource("' . $name . '", \App\Http\Controllers\\' . $this->name . 'Controller::class);';
-        $route_path = 'routes/web.php';
+
+
+
+
+        if (!empty($this->module)) {
+            $route = 'Route::resource("' . $name . '", \'' . $this->name . 'Controller\');';
+            $route_path = 'Modules/' . $this->module . '/Routes/web.php';
+        } else {
+            $route = 'Route::resource("' . $name . '", \App\Http\Controllers\\' . $this->name . 'Controller::class);';
+            $route_path = 'routes/web.php';
+        }
+
         $route_content = file_get_contents($route_path);
         $keyPosition = strpos($route_content, "{$route}");
         if (is_bool($keyPosition)) {
@@ -222,7 +256,9 @@ class CrudGenerator extends GeneratorCommand
 
         foreach (['index', 'create', 'edit', 'form', 'show'] as $view) {
             $viewTemplate = str_replace(
-                array_keys($replace), array_values($replace), $this->getStub("views/{$view}")
+                array_keys($replace),
+                array_values($replace),
+                $this->getStub("views/{$view}")
             );
 
             $this->write($this->_getViewPath($view), $viewTemplate);
@@ -254,7 +290,9 @@ class CrudGenerator extends GeneratorCommand
         $replace = array_merge($this->buildReplacements(), $this->migrationReplacements());
 
         $modelTemplate = str_replace(
-            array_keys($replace), array_values($replace), $this->getStub('Migration')
+            array_keys($replace),
+            array_values($replace),
+            $this->getStub('Migration')
         );
 
         $this->write($migrationPath, $modelTemplate);

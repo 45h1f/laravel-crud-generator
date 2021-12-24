@@ -6,6 +6,7 @@ use {{modelNamespace}}\{{modelName}};
 use {{requestNamespace}}\{{modelName}}Request;
 use Illuminate\Http\Request;
 use {{repositoryNamespace}}\{{modelName}}Repository;
+use App\Http\Controllers\Controller;
 
 /**
  * Class {{modelName}}Controller

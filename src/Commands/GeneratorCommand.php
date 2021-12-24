@@ -47,6 +47,13 @@ abstract class GeneratorCommand extends Command
     protected $table = null;
 
     /**
+     * Module name from argument.
+     *
+     * @var string
+     */
+    protected $module = null;
+
+    /**
      * Formatted Class name from Table.
      *
      * @var string
@@ -91,6 +98,7 @@ abstract class GeneratorCommand extends Command
      */
     protected $controllerNamespace = 'App\Http\Controllers';
 
+    protected $migratePath = 'database\migrations';
     /**
      * Application Layout
      *
@@ -221,7 +229,7 @@ abstract class GeneratorCommand extends Command
      */
     protected function _getControllerPath($name)
     {
-        return app_path($this->_getNamespacePath($this->controllerNamespace) . "{$name}Controller.php");
+        return $this->path($this->_getNamespacePath($this->controllerNamespace) . "{$name}Controller.php");
     }
 
     /**
@@ -231,7 +239,8 @@ abstract class GeneratorCommand extends Command
      */
     protected function _getModelPath($name)
     {
-        return $this->makeDirectory(app_path($this->_getNamespacePath($this->modelNamespace) . "{$name}.php"));
+        // $name = strtolower(Str::plural($name));
+        return $this->makeDirectory($this->path($this->_getNamespacePath($this->modelNamespace) . "{$name}.php"));
     }
 
     /**
@@ -241,7 +250,7 @@ abstract class GeneratorCommand extends Command
      */
     protected function _getRequestPath($name)
     {
-        return $this->makeDirectory(app_path($this->_getNamespacePath($this->requestNamespace) . "{$name}Request.php"));
+        return $this->makeDirectory($this->path($this->_getNamespacePath($this->requestNamespace) . "{$name}Request.php"));
     }
 
     /**
@@ -251,7 +260,7 @@ abstract class GeneratorCommand extends Command
      */
     protected function _getRepositoryPath($name)
     {
-        return $this->makeDirectory(app_path($this->_getNamespacePath($this->repositoryNamespace) . "{$name}Repository.php"));
+        return $this->makeDirectory($this->path($this->_getNamespacePath($this->repositoryNamespace) . "{$name}Repository.php"));
     }
 
     /**
@@ -262,8 +271,7 @@ abstract class GeneratorCommand extends Command
     protected function _getMigrationPath($name)
     {
         $name = strtolower(Str::plural($name));
-        return $this->makeDirectory('database/migrations/'.date('Y_m_d_hmi_').'create_' . "{$name}_table.php");
-
+        return $this->makeDirectory($this->path($this->_getNamespacePath($this->migratePath)  . date('Y_m_d_hmi_') . 'create_' . "{$name}_table.php"));
     }
 
     /**
@@ -309,6 +317,7 @@ abstract class GeneratorCommand extends Command
      */
     protected function buildReplacements()
     {
+
         return [
             '{{layout}}' => $this->layout,
             '{{modelName}}' => $this->name,
@@ -320,7 +329,7 @@ abstract class GeneratorCommand extends Command
             '{{modelNamePluralLowerCase}}' => Str::camel(Str::plural($this->name)),
             '{{modelNamePluralUpperCase}}' => ucfirst(Str::plural($this->name)),
             '{{modelNameLowerCase}}' => Str::camel($this->name),
-            '{{modelRoute}}' => $this->options['route'] ?? Str::kebab(Str::plural($this->name)),
+            '{{modelRoute}}' =>   Str::kebab(Str::plural($this->name)),
             '{{modelView}}' => Str::kebab($this->name),
         ];
     }
@@ -344,7 +353,9 @@ abstract class GeneratorCommand extends Command
         ]);
 
         return str_replace(
-            array_keys($replace), array_values($replace), $this->getStub("views/{$type}")
+            array_keys($replace),
+            array_values($replace),
+            $this->getStub("views/{$type}")
         );
     }
 
@@ -597,21 +608,27 @@ abstract class GeneratorCommand extends Command
         return trim($this->argument('name'));
     }
 
+
+    protected function getModuleInput()
+    {
+        return trim($this->argument('module'));
+    }
+
     /**
      * Build the options
      *
      * @return $this|array
      */
-    protected function buildOptions()
-    {
-        $route = $this->option('route');
+    // protected function buildOptions()
+    // {
+    //     $route = $this->option('route');
 
-        if (!empty($route)) {
-            $this->options['route'] = $route;
-        }
+    //     if (!empty($route)) {
+    //         $this->options['route'] = $route;
+    //     }
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
     /**
      * Get the console command arguments.
@@ -633,5 +650,14 @@ abstract class GeneratorCommand extends Command
     protected function tableExists()
     {
         return Schema::hasTable($this->table);
+    }
+
+    protected function path($url)
+    {
+        if (!empty($this->module)) {
+            return base_path($url);
+        } else {
+            return app_path($url);
+        }
     }
 }
