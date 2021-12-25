@@ -271,7 +271,7 @@ abstract class GeneratorCommand extends Command
     protected function _getMigrationPath($name)
     {
         $name = strtolower(Str::plural($name));
-        return $this->makeDirectory($this->path($this->_getNamespacePath($this->migratePath)  . date('Y_m_d_hmi_') . 'create_' . "{$name}_table.php"));
+        return $this->makeDirectory(base_path($this->_getNamespacePath($this->migratePath)  . date('Y_m_d_hmi_') . 'create_' . "{$name}_table.php"));
     }
 
     /**
