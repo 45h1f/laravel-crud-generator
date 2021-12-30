@@ -73,7 +73,7 @@ abstract class GeneratorCommand extends Command
      * @var string
      */
 
-    protected $modelNamespace = 'App';
+    protected $modelNamespace = 'App\Models';
 
     /**
      * Request Namespace.
