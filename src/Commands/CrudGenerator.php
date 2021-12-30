@@ -198,9 +198,7 @@ class CrudGenerator extends GeneratorCommand
 
     protected function buildRoute()
     {
-        $name = Str::lower(Str::plural($this->name));
-
-
+        $name = Str::kebab(Str::plural($this->name));
 
 
         if (!empty($this->module)) {

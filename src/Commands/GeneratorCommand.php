@@ -307,7 +307,11 @@ abstract class GeneratorCommand extends Command
     {
         $name = Str::kebab($this->name);
 
-        return $this->makeDirectory(resource_path("/views/{$name}/{$view}.blade.php"));
+        if (!empty($this->module)) {
+            return $this->makeDirectory($this->path('Modules/' . $this->module . "/Resources/views/{$name}/{$view}.blade.php"));
+        } else {
+            return $this->makeDirectory(resource_path("/views/{$name}/{$view}.blade.php"));
+        }
     }
 
     /**
