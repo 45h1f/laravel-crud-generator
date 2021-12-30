@@ -321,6 +321,10 @@ abstract class GeneratorCommand extends Command
      */
     protected function buildReplacements()
     {
+        $viewPath = Str::kebab($this->name);
+        if (!empty($this->module)) {
+            $viewPath =strtolower($this->module).'::'.$viewPath;
+        }
 
         return [
             '{{layout}}' => $this->layout,
@@ -334,7 +338,7 @@ abstract class GeneratorCommand extends Command
             '{{modelNamePluralUpperCase}}' => ucfirst(Str::plural($this->name)),
             '{{modelNameLowerCase}}' => Str::camel($this->name),
             '{{modelRoute}}' =>   Str::kebab(Str::plural($this->name)),
-            '{{modelView}}' => Str::kebab($this->name),
+            '{{modelView}}' => $viewPath,
         ];
     }
 
