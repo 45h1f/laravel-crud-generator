@@ -107,8 +107,7 @@ class {{modelName}}Controller extends Controller
      */
     public function destroy($id)
     {
-        ${{modelNameLowerCase}} = {{modelName}}::find($id)->delete();
-
+        $this->{{modelNamePluralLowerCase}}Repository->update($id);
         return redirect()->route('{{modelRoute}}.index')
             ->with('success', '{{modelName}} deleted successfully');
     }
