@@ -3,32 +3,15 @@
 namespace {{repositoryNamespace}};
 
 use {{modelNamespace}}\{{modelName}};
+use {{interfaceNamespace}}\{{modelName}}RepositoryInterface;
 
-class {{modelName}}Repository
+class {{modelName}}Repository extends BaseRepository implements {{modelName}}RepositoryInterface
 {
-    public function all()
-    {
-        return {{modelName}}::latest()->paginate(20);;
-    }
+    protected $model;
 
-    public function store($data)
-    {
-        return {{modelName}}::create($data);
-    }
 
-    public function update($id,$data)
+    public function __construct({{modelName}} $model)
     {
-        return {{modelName}}::findOrFail($id)->update($data);
-
-    }
-
-    public function show($id)
-    {
-        return {{modelName}}::findOrFail($id);
-    }
-
-    public function delete($id)
-    {
-        return {{modelName}}::findOrFail($id)->delete($id);
+        $this->model = $model;
     }
 }

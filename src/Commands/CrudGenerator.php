@@ -8,29 +8,12 @@ use Nwidart\Modules\Facades\Module;
 
 class CrudGenerator extends GeneratorCommand
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'make:crud
                             {name : Table name}
                             {module? : Module name}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Create bootstrap CRUD operations';
 
-    /**
-     * Execute the console command.
-     *
-     * @return bool|null
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     *
-     */
     public function handle()
     {
         $this->info('Running Crud Generator ...');
@@ -57,17 +40,22 @@ class CrudGenerator extends GeneratorCommand
             $this->controllerNamespace = "Modules\\" . $this->module . "\Http\Controllers";
             $this->modelNamespace = "Modules\\" . $this->module . "\Models";
             $this->requestNamespace = "Modules\\" . $this->module . "\Http\Requests";
-            $this->repositoryNamespace = "Modules\\" . $this->module . "\Repositories";
+            $this->repositoryNamespace = "Modules\\" . $this->module . "\Repositories\Eloquent";
+            $this->interfaceNamespace = "Modules\\" . $this->module . "\Repositories";
             $this->migratePath = "Modules\\" . $this->module . "\Database\Migrations";
+
+            $this->providerFileLocation = 'app/Providers/RepositoryServiceProvider.php';
+            $this->providerRegisterFileLocation = 'app/Providers/AppServiceProvider.php';
         };
 
         // Generate the crud
         $this
-            // ->buildOptions()
             ->buildController()
             ->buildModel()
             ->buildRequest()
             ->buildRepository()
+            ->buildInterface()
+            ->buildProviderWithRegister()
             ->buildMigration()
             ->buildViews()
             ->buildRoute();
@@ -77,13 +65,6 @@ class CrudGenerator extends GeneratorCommand
         return true;
     }
 
-    /**
-     * Build the Controller Class and save in app/Http/Controllers.
-     *
-     * @return $this
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     *
-     */
     protected function buildController()
     {
         $controllerPath = $this->_getControllerPath($this->name);
@@ -107,11 +88,6 @@ class CrudGenerator extends GeneratorCommand
         return $this;
     }
 
-    /**
-     * @return $this
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     *
-     */
     protected function buildModel()
     {
         $modelPath = $this->_getModelPath($this->name);
@@ -134,12 +110,6 @@ class CrudGenerator extends GeneratorCommand
 
         return $this;
     }
-
-    /**
-     * @return $this
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     *
-     */
 
     protected function buildRequest()
     {
@@ -165,17 +135,13 @@ class CrudGenerator extends GeneratorCommand
         return $this;
     }
 
-    /**
-     * @return $this
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     *
-     */
-
     protected function buildRepository()
     {
-        $requestPath = $this->_getRepositoryPath($this->name);
+        $repositoryPath = $this->_getRepositoryPath($this->name);
 
-        if ($this->files->exists($requestPath) && $this->ask('Already exist Repository. Do you want overwrite (y/n)?', 'y') == 'n') {
+        $baseRepository = $this->baseRepositoryFileLocation;
+        $this->write($baseRepository, $this->getStub('BaseRepository'));;
+        if ($this->files->exists($repositoryPath) && $this->ask('Already exist Repository. Do you want overwrite (y/n)?', 'y') == 'n') {
             return $this;
         }
 
@@ -190,11 +156,89 @@ class CrudGenerator extends GeneratorCommand
             $this->getStub('Repository')
         );
 
-        $this->write($requestPath, $requestTemplate);
+        $this->write($repositoryPath, $requestTemplate);
 
         return $this;
     }
 
+    protected function buildInterface()
+    {
+        $interfacePath = $this->_getInterfacePath($this->name);
+
+        $baseInterface = $this->baseInterfaceFileLocation;
+        $this->write($baseInterface, $this->getStub('BaseInterface'));
+
+
+        if ($this->files->exists($interfacePath) && $this->ask('Already exist Interface. Do you want overwrite (y/n)?', 'y') == 'n') {
+            return $this;
+        }
+
+
+        $this->info('Creating Interface ...');
+
+        // Make the models attributes and replacement
+        $replace = $this->buildReplacements();
+
+        $requestTemplate = str_replace(
+            array_keys($replace),
+            array_values($replace),
+            $this->getStub('Interface')
+        );
+
+        $this->write($interfacePath, $requestTemplate);
+
+        return $this;
+    }
+
+    public function buildProviderWithRegister()
+    {
+        $providerFileLocation = $this->providerFileLocation;
+        $providerRegisterFileLocation = $this->providerRegisterFileLocation;
+
+        if (!$this->files->exists($providerFileLocation)) {
+            $this->write($providerFileLocation, $this->getStub('RepositoryServiceProvider'));
+
+            $regProviderText = '$this->app->register(RepositoryServiceProvider::class);';
+            $providerRegisterContent = file_get_contents($this->providerRegisterFileLocation);
+
+            $keyPosition = strpos($providerRegisterContent, "{$regProviderText}");
+            if (!$keyPosition) {
+                $regText = 'public function register()';
+                $regTextCheck = strpos($providerRegisterContent, "{$regText}");
+                $providerRegisterContentUpdate = wordwrap($providerRegisterContent, $regTextCheck + 35, $regProviderText . "\n");
+                file_put_contents($providerRegisterFileLocation, $providerRegisterContentUpdate);
+            }
+        }
+        $this->registerInRepo();
+        return $this;
+    }
+
+    public function registerInRepo()
+    {
+
+        //todo work here
+        $bindText = '$this->app->bind(' . $this->name . 'RepositoryInterface::class, ' . $this->name . 'Repository::class);';
+
+        $useInterfaceText = ' use ' . $this->interfaceNamespace . '\\' . $this->name . 'RepositoryInterface; ' . "\n" .
+            ' use ' . $this->repositoryNamespace . '\\' . $this->name . 'Repository;';
+
+
+        $providerFileLocationContent = file_get_contents($this->providerFileLocation);
+        $keyPosition = strpos($providerFileLocationContent, "{$bindText}");
+        if (is_bool($keyPosition)) {
+            $regText = 'public function register()';
+            $regTextCheck = strpos($providerFileLocationContent, "{$regText}");
+            $providerRegisterContentUpdate = wordwrap($providerFileLocationContent, $regTextCheck + 35, $bindText . "\n");
+
+//            file_put_contents($this->providerFileLocation, $providerRegisterContentUpdate);
+
+            $providerFileLocationContent = file_get_contents($this->providerFileLocation);
+            $providerRegisterContentUpdate = wordwrap($providerFileLocationContent,  35, $useInterfaceText . "\n");
+dd($providerRegisterContentUpdate);
+            file_put_contents($this->providerFileLocation, $providerRegisterContentUpdate);
+
+        }
+    }
 
     protected function buildRoute()
     {
@@ -219,12 +263,6 @@ class CrudGenerator extends GeneratorCommand
         return $this;
     }
 
-    /**
-     * @return $this
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     *
-     * @throws \Exception
-     */
     protected function buildViews()
     {
         $this->info('Creating Views ...');
@@ -265,11 +303,6 @@ class CrudGenerator extends GeneratorCommand
         return $this;
     }
 
-    /**
-     * Make the class name from table name.
-     *
-     * @return string
-     */
     private function _buildClassName()
     {
         return Str::studly(Str::singular($this->table));
@@ -297,4 +330,6 @@ class CrudGenerator extends GeneratorCommand
 
         return $this;
     }
+
+
 }
