@@ -251,17 +251,6 @@ class CrudGenerator extends GeneratorCommand
             $providerRegisterContentUpdate = $begin . "\n" . $useInterfaceText . "\n" . $end;
             file_put_contents($this->providerFileLocation, $providerRegisterContentUpdate);
 
-
-
-          /*  $useInterfaceText = ' use ' . $this->interfaceNamespace . '\\' . $this->name . 'RepositoryInterface; ' . "\n" .
-                ' use ' . $this->repositoryNamespace . '\\' . $this->name . 'Repository;';
-            $providerFileLocationContent = file_get_contents($this->providerFileLocation);
-            $regText = 'use Illuminate\Support\ServiceProvider;';
-            $regTextCheck = strpos($providerFileLocationContent, "{$regText}");
-            $begin = substr($providerFileLocationContent, 0, $regTextCheck -1);
-            $end = substr($providerFileLocationContent, $regTextCheck  -1);
-            $providerRegisterContentUpdate = $begin . "\n" . $useInterfaceText . "\n" . $end;
-            file_put_contents($this->providerFileLocation, $providerRegisterContentUpdate);*/
         }
 
 

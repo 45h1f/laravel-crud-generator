@@ -9,6 +9,8 @@ interface EloquentRepositoryInterface
 {
     public function all(array $columns = ['*'], array $relations = []): Collection;
 
+    public function allWithPaginate(int $parPage,array $relations = []): Object;
+
     public function allTrashed(): Collection;
 
     public function findById(
@@ -22,7 +24,7 @@ interface EloquentRepositoryInterface
 
     public function findOnlyTrashedById(int $modelId): ?Model;
 
-    public function create(array $payload): ?Model;
+    public function store(array $payload): ?Model;
 
     public function update(int $modelId, array $payload): bool;
 

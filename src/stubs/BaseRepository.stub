@@ -20,6 +20,11 @@ class BaseRepository implements EloquentRepositoryInterface
         return $this->model->with($relations)->get($columns);
     }
 
+    public function allWithPaginate(int $parPage=20,array $relations = []): Object
+    {
+        return $this->model->with($relations)->paginate($parPage);
+    }
+
     public function allTrashed(): Collection
     {
         return $this->model->onlyTrashed()->get();
@@ -45,7 +50,7 @@ class BaseRepository implements EloquentRepositoryInterface
         return $this->model->onlyTrashed()->findOrFail($modelId);
     }
 
-    public function create(array $payload): ?Model
+    public function store(array $payload): ?Model
     {
         $model = $this->model->create($payload);
 
