@@ -217,6 +217,7 @@ class CrudGenerator extends GeneratorCommand
     {
 
         //todo work here
+        
         $bindText = '$this->app->bind(' . $this->name . 'RepositoryInterface::class, ' . $this->name . 'Repository::class);';
 
         $useInterfaceText = ' use ' . $this->interfaceNamespace . '\\' . $this->name . 'RepositoryInterface; ' . "\n" .
