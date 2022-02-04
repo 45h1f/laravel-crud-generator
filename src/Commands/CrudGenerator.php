@@ -43,6 +43,7 @@ class CrudGenerator extends GeneratorCommand
             $this->repositoryNamespace = "Modules\\" . $this->module . "\Repositories\Eloquent";
             $this->interfaceNamespace = "Modules\\" . $this->module . "\Repositories";
             $this->migratePath = "Modules\\" . $this->module . "\Database\Migrations";
+            $this->providerNamespace = "Modules\\" . $this->module . "\Providers";
 
             $this->providerFileLocation = 'Modules/' . $this->module . '/Providers/RepositoryServiceProvider.php';
             $this->providerRegisterFileLocation = 'Modules/' . $this->module . '/Providers/' . $this->module . 'ServiceProvider.php';;
@@ -197,7 +198,15 @@ class CrudGenerator extends GeneratorCommand
 
 
         if (!$this->files->exists($providerFileLocation)) {
-            $this->write($providerFileLocation, $this->getStub('RepositoryServiceProvider'));
+            $replace = $this->buildReplacements();
+
+            $RepositoryServiceProviderTemplate = str_replace(
+                array_keys($replace),
+                array_values($replace),
+                $this->getStub('RepositoryServiceProvider')
+            );
+            $this->write($providerFileLocation, $RepositoryServiceProviderTemplate);
+
 
             $regProviderText = '$this->app->register(RepositoryServiceProvider::class);';
             $providerRegisterContent = file_get_contents($this->providerRegisterFileLocation);
@@ -241,6 +250,18 @@ class CrudGenerator extends GeneratorCommand
             $end = substr($providerFileLocationContent, $regTextCheck  -1);
             $providerRegisterContentUpdate = $begin . "\n" . $useInterfaceText . "\n" . $end;
             file_put_contents($this->providerFileLocation, $providerRegisterContentUpdate);
+
+
+
+          /*  $useInterfaceText = ' use ' . $this->interfaceNamespace . '\\' . $this->name . 'RepositoryInterface; ' . "\n" .
+                ' use ' . $this->repositoryNamespace . '\\' . $this->name . 'Repository;';
+            $providerFileLocationContent = file_get_contents($this->providerFileLocation);
+            $regText = 'use Illuminate\Support\ServiceProvider;';
+            $regTextCheck = strpos($providerFileLocationContent, "{$regText}");
+            $begin = substr($providerFileLocationContent, 0, $regTextCheck -1);
+            $end = substr($providerFileLocationContent, $regTextCheck  -1);
+            $providerRegisterContentUpdate = $begin . "\n" . $useInterfaceText . "\n" . $end;
+            file_put_contents($this->providerFileLocation, $providerRegisterContentUpdate);*/
         }
 
 

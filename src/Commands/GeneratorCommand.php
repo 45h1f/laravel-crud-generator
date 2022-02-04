@@ -42,6 +42,8 @@ abstract class GeneratorCommand extends Command
 
     protected $controllerNamespace = 'App\Http\Controllers';
 
+    protected $providerNamespace = 'App\Providers';
+
     protected $migratePath = 'database\migrations';
 
     protected $layout = 'layouts.app';
@@ -182,6 +184,7 @@ abstract class GeneratorCommand extends Command
             '{{interfaceNamespace}}' => $this->interfaceNamespace,
             '{{requestNamespace}}' => $this->requestNamespace,
             '{{controllerNamespace}}' => $this->controllerNamespace,
+            '{{providerNamespace}}' => $this->providerNamespace,
             '{{modelNamePluralLowerCase}}' => Str::camel(Str::plural($this->name)),
             '{{modelNamePluralUpperCase}}' => ucfirst(Str::plural($this->name)),
             '{{modelNameLowerCase}}' => Str::camel($this->name),
@@ -189,6 +192,7 @@ abstract class GeneratorCommand extends Command
             '{{modelView}}' => $viewPath,
         ];
     }
+
 
     protected function getField($title, $column, $type = 'form-field')
     {
