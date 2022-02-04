@@ -44,8 +44,8 @@ class CrudGenerator extends GeneratorCommand
             $this->interfaceNamespace = "Modules\\" . $this->module . "\Repositories";
             $this->migratePath = "Modules\\" . $this->module . "\Database\Migrations";
 
-            $this->providerFileLocation = 'app/Providers/RepositoryServiceProvider.php';
-            $this->providerRegisterFileLocation = 'app/Providers/AppServiceProvider.php';
+            $this->providerFileLocation = 'Modules/' . $this->module . '/Providers/RepositoryServiceProvider.php';
+            $this->providerRegisterFileLocation = 'Modules/' . $this->module . '/Providers/' . $this->module . 'ServiceProvider.php';;
         };
 
         // Generate the crud
@@ -195,6 +195,7 @@ class CrudGenerator extends GeneratorCommand
         $providerFileLocation = $this->providerFileLocation;
         $providerRegisterFileLocation = $this->providerRegisterFileLocation;
 
+
         if (!$this->files->exists($providerFileLocation)) {
             $this->write($providerFileLocation, $this->getStub('RepositoryServiceProvider'));
 
@@ -205,7 +206,10 @@ class CrudGenerator extends GeneratorCommand
             if (!$keyPosition) {
                 $regText = 'public function register()';
                 $regTextCheck = strpos($providerRegisterContent, "{$regText}");
-                $providerRegisterContentUpdate = wordwrap($providerRegisterContent, $regTextCheck + 35, $regProviderText . "\n");
+
+                $begin = substr($providerRegisterContent, 0, $regTextCheck + 32);
+                $end = substr($providerRegisterContent, $regTextCheck + 32);
+                $providerRegisterContentUpdate = $begin . "\n" . $regProviderText . "\n" . $end;
                 file_put_contents($providerRegisterFileLocation, $providerRegisterContentUpdate);
             }
         }
@@ -215,30 +219,34 @@ class CrudGenerator extends GeneratorCommand
 
     public function registerInRepo()
     {
-
-        //todo work here
-        
         $bindText = '$this->app->bind(' . $this->name . 'RepositoryInterface::class, ' . $this->name . 'Repository::class);';
-
-        $useInterfaceText = ' use ' . $this->interfaceNamespace . '\\' . $this->name . 'RepositoryInterface; ' . "\n" .
-            ' use ' . $this->repositoryNamespace . '\\' . $this->name . 'Repository;';
-
 
         $providerFileLocationContent = file_get_contents($this->providerFileLocation);
         $keyPosition = strpos($providerFileLocationContent, "{$bindText}");
+
         if (is_bool($keyPosition)) {
             $regText = 'public function register()';
             $regTextCheck = strpos($providerFileLocationContent, "{$regText}");
-            $providerRegisterContentUpdate = wordwrap($providerFileLocationContent, $regTextCheck + 35, $bindText . "\n");
-
-//            file_put_contents($this->providerFileLocation, $providerRegisterContentUpdate);
-
-            $providerFileLocationContent = file_get_contents($this->providerFileLocation);
-            $providerRegisterContentUpdate = wordwrap($providerFileLocationContent,  35, $useInterfaceText . "\n");
-dd($providerRegisterContentUpdate);
+            $begin = substr($providerFileLocationContent, 0, $regTextCheck + 32);
+            $end = substr($providerFileLocationContent, $regTextCheck + 32);
+            $providerRegisterContentUpdate = $begin . "\n" . $bindText . "\n" . $end;
             file_put_contents($this->providerFileLocation, $providerRegisterContentUpdate);
 
+            $useInterfaceText = ' use ' . $this->interfaceNamespace . '\\' . $this->name . 'RepositoryInterface; ' . "\n" .
+                ' use ' . $this->repositoryNamespace . '\\' . $this->name . 'Repository;';
+            $providerFileLocationContent = file_get_contents($this->providerFileLocation);
+            $regText = 'use App\Repositories\Eloquent\BaseRepository;';
+            $regTextCheck = strpos($providerFileLocationContent, "{$regText}");
+            $begin = substr($providerFileLocationContent, 0, $regTextCheck -1);
+            $end = substr($providerFileLocationContent, $regTextCheck  -1);
+            $providerRegisterContentUpdate = $begin . "\n" . $useInterfaceText . "\n" . $end;
+            file_put_contents($this->providerFileLocation, $providerRegisterContentUpdate);
         }
+
+
+
+
+
     }
 
     protected function buildRoute()
