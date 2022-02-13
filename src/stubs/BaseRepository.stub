@@ -20,7 +20,17 @@ class BaseRepository implements EloquentRepositoryInterface
         return $this->model->with($relations)->get($columns);
     }
 
-    public function allWithPaginate(int $parPage=20,array $relations = []): Object
+    public function allActive(array $columns = ['*'], array $relations = []): Collection
+    {
+        return $this->model->with($relations)->where('status', 1)->get($columns);
+    }
+
+    public function allInActive(array $columns = ['*'], array $relations = []): Collection
+    {
+        return $this->model->with($relations)->where('status', 0)->get($columns);
+    }
+
+    public function allWithPaginate(int $parPage = 20, array $relations = []): object
     {
         return $this->model->with($relations)->paginate($parPage);
     }
@@ -28,6 +38,11 @@ class BaseRepository implements EloquentRepositoryInterface
     public function allTrashed(): Collection
     {
         return $this->model->onlyTrashed()->get();
+    }
+
+    public function newObject(): ?Model
+    {
+        return $this->model = new $this->model;
     }
 
     public function findById(
@@ -52,6 +67,9 @@ class BaseRepository implements EloquentRepositoryInterface
 
     public function store(array $payload): ?Model
     {
+        if (isset($payload['lang'])) {
+            app()->setLocale($payload['lang']);
+        }
         $model = $this->model->create($payload);
 
         return $model->fresh();
@@ -59,6 +77,10 @@ class BaseRepository implements EloquentRepositoryInterface
 
     public function update(int $modelId, array $payload): bool
     {
+        if (isset($payload['lang'])) {
+            app()->setLocale($payload['lang']);
+        }
+
         $model = $this->findById($modelId);
 
         return $model->update($payload);
@@ -77,5 +99,15 @@ class BaseRepository implements EloquentRepositoryInterface
     public function permanentlyDeleteById(int $modelId): bool
     {
         return $this->findTrashedById($modelId)->forceDelete();
+    }
+
+    public function allInArray($key = 'id', $value = 'name'): array
+    {
+        return $this->model::pluck($value, $key)->toArray();
+    }
+
+    public function allActiveInArray($key = 'id', $value = 'name'): array
+    {
+        return $this->model::where('status', 1)->pluck($value, $key)->toArray();
     }
 }

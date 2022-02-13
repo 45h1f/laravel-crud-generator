@@ -9,9 +9,15 @@ interface EloquentRepositoryInterface
 {
     public function all(array $columns = ['*'], array $relations = []): Collection;
 
-    public function allWithPaginate(int $parPage,array $relations = []): Object;
+    public function allActive(array $columns = ['*'], array $relations = []): Collection;
+
+    public function allInActive(array $columns = ['*'], array $relations = []): Collection;
+
+    public function allWithPaginate(int $parPage, array $relations = []): object;
 
     public function allTrashed(): Collection;
+
+    public function newObject(): ?Model;
 
     public function findById(
         int   $modelId,
@@ -33,4 +39,8 @@ interface EloquentRepositoryInterface
     public function restoreById(int $modelId): bool;
 
     public function permanentlyDeleteById(int $modelId): bool;
+
+    public function allInArray(string $key, string $name): array;
+
+    public function allActiveInArray(string $key, string $name): array;
 }
