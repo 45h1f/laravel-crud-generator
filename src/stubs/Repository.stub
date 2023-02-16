@@ -10,7 +10,6 @@ class {{modelName}}Repository extends BaseRepository implements {{modelName}}Rep
 {
     protected $model;
 
-
     public function __construct({{modelName}} $model)
     {
         $this->model = $model;

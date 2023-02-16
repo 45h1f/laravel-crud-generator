@@ -5,16 +5,8 @@ namespace Ashiful\Crud;
 use Ashiful\Crud\Commands\CrudGenerator;
 use Illuminate\Support\ServiceProvider;
 
-/**
- * Class CrudServiceProvider.
- */
 class CrudServiceProvider extends ServiceProvider
 {
-    /**
-     * Bootstrap services.
-     *
-     * @return void
-     */
     public function boot()
     {
         if ($this->app->runningInConsole()) {
@@ -40,11 +32,6 @@ class CrudServiceProvider extends ServiceProvider
         ], 'crud');
     }
 
-    /**
-     * Register services.
-     *
-     * @return void
-     */
     public function register()
     {
         //

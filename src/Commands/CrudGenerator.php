@@ -12,7 +12,7 @@ class CrudGenerator extends GeneratorCommand
                             {name : Table name}
                             {module? : Module name}';
 
-    protected $description = 'Create bootstrap CRUD operations';
+    protected $description = 'Create CRUD operations';
 
     public function handle()
     {
@@ -208,16 +208,18 @@ class CrudGenerator extends GeneratorCommand
             $this->write($providerFileLocation, $RepositoryServiceProviderTemplate);
 
 
-            $regProviderText = '$this->app->register(RepositoryServiceProvider::class);';
+            $regProviderText = '        $this->app->register(RepositoryServiceProvider::class);';
             $providerRegisterContent = file_get_contents($this->providerRegisterFileLocation);
 
             $keyPosition = strpos($providerRegisterContent, "{$regProviderText}");
+
             if (!$keyPosition) {
-                $regText = 'public function register()';
+                $regText = 'public function register(): void';
+
                 $regTextCheck = strpos($providerRegisterContent, "{$regText}");
 
-                $begin = substr($providerRegisterContent, 0, $regTextCheck + 32);
-                $end = substr($providerRegisterContent, $regTextCheck + 32);
+                $begin = substr($providerRegisterContent, 0, $regTextCheck + 38);
+                $end = substr($providerRegisterContent, $regTextCheck + 38);
                 $providerRegisterContentUpdate = $begin . "\n" . $regProviderText . "\n" . $end;
                 file_put_contents($providerRegisterFileLocation, $providerRegisterContentUpdate);
             }
@@ -228,33 +230,33 @@ class CrudGenerator extends GeneratorCommand
 
     public function registerInRepo()
     {
-        $bindText = '$this->app->bind(' . $this->name . 'RepositoryInterface::class, ' . $this->name . 'Repository::class);';
+        $bindText = '       $this->app->bind(' . $this->name . 'RepositoryInterface::class, ' . $this->name . 'Repository::class);';
 
         $providerFileLocationContent = file_get_contents($this->providerFileLocation);
         $keyPosition = strpos($providerFileLocationContent, "{$bindText}");
 
         if (is_bool($keyPosition)) {
-            $regText = 'public function register()';
+            $regText = 'public function register(): void';
             $regTextCheck = strpos($providerFileLocationContent, "{$regText}");
-            $begin = substr($providerFileLocationContent, 0, $regTextCheck + 32);
-            $end = substr($providerFileLocationContent, $regTextCheck + 32);
+            $begin = substr($providerFileLocationContent, 0, $regTextCheck + 40);
+            $end = substr($providerFileLocationContent, $regTextCheck + 40);
+
             $providerRegisterContentUpdate = $begin . "\n" . $bindText . "\n" . $end;
+
             file_put_contents($this->providerFileLocation, $providerRegisterContentUpdate);
 
             $useInterfaceText = ' use ' . $this->interfaceNamespace . '\\' . $this->name . 'RepositoryInterface; ' . "\n" .
                 ' use ' . $this->repositoryNamespace . '\\' . $this->name . 'Repository;';
+
             $providerFileLocationContent = file_get_contents($this->providerFileLocation);
             $regText = 'use App\Repositories\Eloquent\BaseRepository;';
             $regTextCheck = strpos($providerFileLocationContent, "{$regText}");
-            $begin = substr($providerFileLocationContent, 0, $regTextCheck -1);
-            $end = substr($providerFileLocationContent, $regTextCheck  -1);
+            $begin = substr($providerFileLocationContent, 0, $regTextCheck - 1);
+            $end = substr($providerFileLocationContent, $regTextCheck - 1);
             $providerRegisterContentUpdate = $begin . "\n" . $useInterfaceText . "\n" . $end;
             file_put_contents($this->providerFileLocation, $providerRegisterContentUpdate);
 
         }
-
-
-
 
 
     }

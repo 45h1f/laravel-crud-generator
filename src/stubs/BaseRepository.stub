@@ -71,7 +71,6 @@ class BaseRepository implements EloquentRepositoryInterface
             app()->setLocale($payload['lang']);
         }
         $model = $this->model->create($payload);
-
         return $model->fresh();
     }
 
@@ -80,9 +79,7 @@ class BaseRepository implements EloquentRepositoryInterface
         if (isset($payload['lang'])) {
             app()->setLocale($payload['lang']);
         }
-
         $model = $this->findById($modelId);
-
         return $model->update($payload);
     }
 

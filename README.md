@@ -1,6 +1,4 @@
-# Very short description of the package
- 
- something
+# Laravel CRUD
 
 ## Installation
 
@@ -13,6 +11,6 @@ composer require ashiful/curd
 ## Usage
 
 ```php
-// Usage description here
+// will be update later
 ```
  

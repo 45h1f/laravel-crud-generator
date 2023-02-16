@@ -5,4 +5,5 @@ use App\Repositories\EloquentRepositoryInterface;
 
 interface {{modelName}}RepositoryInterface extends EloquentRepositoryInterface
 {
+
 }

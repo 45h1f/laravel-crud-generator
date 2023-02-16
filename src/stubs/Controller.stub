@@ -6,6 +6,8 @@ use {{modelNamespace}}\{{modelName}};
 use {{requestNamespace}}\{{modelName}}Request;
 use {{interfaceNamespace}}\{{modelName}}RepositoryInterface;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class {{modelName}}Controller extends Controller
 {
@@ -13,56 +15,48 @@ class {{modelName}}Controller extends Controller
 
    public function __construct({{modelName}}RepositoryInterface ${{modelNamePluralLowerCase}}Repository)
    {
-       $this->{{modelNamePluralLowerCase}}Repository = ${{modelNamePluralLowerCase}}Repository;
+        $this->{{modelNamePluralLowerCase}}Repository = ${{modelNamePluralLowerCase}}Repository;
    }
 
-    public function index()
+    public function index(): View
     {
-      ${{modelNamePluralLowerCase}} = $this->{{modelNamePluralLowerCase}}Repository->allWithPaginate();
-
+        ${{modelNamePluralLowerCase}} = $this->{{modelNamePluralLowerCase}}Repository->allWithPaginate();
         return view('{{modelView}}.index', compact('{{modelNamePluralLowerCase}}'));
     }
 
-    public function create()
+    public function create(): View
     {
         ${{modelNameLowerCase}} = new {{modelName}}();
         return view('{{modelView}}.create', compact('{{modelNameLowerCase}}'));
     }
 
-
-    public function store({{modelName}}Request $request)
+    public function store({{modelName}}Request $request): RedirectResponse
     {
         $this->{{modelNamePluralLowerCase}}Repository->store($request->validated());
-        return redirect()->route('{{modelRoute}}.index')
-            ->with('success', trans('common.Created successfully'));
+        return redirect()->route('{{modelRoute}}.index')->with('success', 'Operation successfully');
     }
 
-
-    public function show($id)
+    public function show($id): View
     {
         ${{modelNameLowerCase}} =  $this->{{modelNamePluralLowerCase}}Repository->findById($id);
-
         return view('{{modelView}}.show', compact('{{modelNameLowerCase}}'));
     }
 
-    public function edit($id)
+    public function edit($id): View
     {
-      ${{modelNameLowerCase}} =  $this->{{modelNamePluralLowerCase}}Repository->findById($id);
-
+        ${{modelNameLowerCase}} =  $this->{{modelNamePluralLowerCase}}Repository->findById($id);
         return view('{{modelView}}.edit', compact('{{modelNameLowerCase}}'));
     }
 
-    public function update({{modelName}}Request $request, $id)
+    public function update({{modelName}}Request $request, $id): RedirectResponse
     {
         $this->{{modelNamePluralLowerCase}}Repository->update($id,$request->validated());
-        return redirect()->route('{{modelRoute}}.index')
-            ->with('success', trans('common.Updated successfully'));
+        return redirect()->route('{{modelRoute}}.index')->with('success', 'Operation successfully');
     }
 
-    public function destroy($id)
+    public function destroy($id): RedirectResponse
     {
         $this->{{modelNamePluralLowerCase}}Repository->deleteById($id);
-        return redirect()->route('{{modelRoute}}.index')
-            ->with('success', trans('common.Deleted successfully'));
+        return redirect()->route('{{modelRoute}}.index')->with('success', 'Operation successfully');
     }
 }
