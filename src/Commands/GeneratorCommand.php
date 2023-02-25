@@ -36,9 +36,9 @@ abstract class GeneratorCommand extends Command
 
     protected $requestNamespace = 'App\Http\Requests';
 
-    protected $repositoryNamespace = 'App\Repositories\Eloquent';
+    protected $repositoryNamespace = 'App\Repositories';
 
-    protected $interfaceNamespace = 'App\Repositories';
+    protected $interfaceNamespace = 'App\Interfaces';
 
     protected $controllerNamespace = 'App\Http\Controllers';
 
@@ -50,9 +50,9 @@ abstract class GeneratorCommand extends Command
 
     protected $options = [];
 
-    protected $baseRepositoryFileLocation = 'app/Repositories/Eloquent/BaseRepository.php';
+    protected $baseRepositoryFileLocation = 'app/Repositories/BaseRepository.php';
 
-    protected $baseInterfaceFileLocation = 'app/Repositories/EloquentRepositoryInterface.php';
+    protected $baseInterfaceFileLocation = 'app/Interfaces/BaseRepositoryInterface.php';
 
     protected $providerFileLocation = 'app/Providers/RepositoryServiceProvider.php';
 

@@ -4,7 +4,6 @@ namespace {{repositoryNamespace}};
 
 use {{modelNamespace}}\{{modelName}};
 use {{interfaceNamespace}}\{{modelName}}RepositoryInterface;
-use App\Repositories\Eloquent\BaseRepository;
 
 class {{modelName}}Repository extends BaseRepository implements {{modelName}}RepositoryInterface
 {

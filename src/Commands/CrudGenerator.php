@@ -40,8 +40,8 @@ class CrudGenerator extends GeneratorCommand
             $this->controllerNamespace = "Modules\\" . $this->module . "\Http\Controllers";
             $this->modelNamespace = "Modules\\" . $this->module . "\Models";
             $this->requestNamespace = "Modules\\" . $this->module . "\Http\Requests";
-            $this->repositoryNamespace = "Modules\\" . $this->module . "\Repositories\Eloquent";
-            $this->interfaceNamespace = "Modules\\" . $this->module . "\Repositories";
+            $this->repositoryNamespace = "Modules\\" . $this->module . "\Repositories";
+            $this->interfaceNamespace = "Modules\\" . $this->module . "\Interfaces";
             $this->migratePath = "Modules\\" . $this->module . "\Database\Migrations";
             $this->providerNamespace = "Modules\\" . $this->module . "\Providers";
 
@@ -249,7 +249,7 @@ class CrudGenerator extends GeneratorCommand
                 ' use ' . $this->repositoryNamespace . '\\' . $this->name . 'Repository;';
 
             $providerFileLocationContent = file_get_contents($this->providerFileLocation);
-            $regText = 'use App\Repositories\Eloquent\BaseRepository;';
+            $regText = 'use App\Repositories\BaseRepository;';
             $regTextCheck = strpos($providerFileLocationContent, "{$regText}");
             $begin = substr($providerFileLocationContent, 0, $regTextCheck - 1);
             $end = substr($providerFileLocationContent, $regTextCheck - 1);
