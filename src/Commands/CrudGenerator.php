@@ -4,33 +4,57 @@ namespace Ashiful\Crud\Commands;
 
 use Illuminate\Support\Str;
 use Nwidart\Modules\Facades\Module;
+use Illuminate\Support\Facades\Schema;
+use function Laravel\Prompts\alert;
+use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\error;
+use function Laravel\Prompts\info;
+use function Laravel\Prompts\note;
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\text;
+use function Laravel\Prompts\warning;
 
 
 class CrudGenerator extends GeneratorCommand
 {
-    protected $signature = 'make:crud
-                            {name : Table name}
-                            {module? : Module name}';
+    protected $signature = 'make:crud';
 
     protected $description = 'Create CRUD operations';
 
     public function handle()
     {
-        $this->info('Running Crud Generator ...');
+//        info('Hello');
+//        note('Hello');
+//        warning('Hello');
+//        error('Hello');
+//        alert('Hello');
+//exit;
+        $this->table = text(
+            label: 'What is the table name?',
+            required: 'table name is required',
+            validate: fn(string $value) => match (true) {
+                !Schema::hasTable($value) => 'Table is not exist',
+                default => null
+            }
+        );
+        if (class_exists(Module::class)) {
+            $confirmed = confirm(
+                label: 'You want to use Laravel Module?',
+                default: false
+            );
 
-        $this->table = $this->getNameInput();
-        $this->module = $this->getModuleInput();
-
-        if (!empty($this->module) && !Module::has($this->module)) {
-            $this->error("`{$this->module}` module not exist");
-            return false;
-        };
-        // If table not exist in DB return
-        if (!$this->tableExists()) {
-            $this->error("`{$this->table}` table not exist");
-
-            return false;
+            if ($confirmed) {
+                $this->module = $this->table = text(
+                    label: 'What is the module name?',
+                    required: 'module name is required',
+                    validate: fn(string $value) => match (true) {
+                        !Module::find($value) => 'Module is not exist',
+                        default => null
+                    }
+                );
+            }
         }
+
 
         // Build the class name from table name
         $this->name = $this->_buildClassName();
@@ -44,10 +68,9 @@ class CrudGenerator extends GeneratorCommand
             $this->interfaceNamespace = "Modules\\" . $this->module . "\Interfaces";
             $this->migratePath = "Modules\\" . $this->module . "\Database\Migrations";
             $this->providerNamespace = "Modules\\" . $this->module . "\Providers";
-
             $this->providerFileLocation = 'Modules/' . $this->module . '/Providers/RepositoryServiceProvider.php';
-            $this->providerRegisterFileLocation = 'Modules/' . $this->module . '/Providers/' . $this->module . 'ServiceProvider.php';;
-        };
+            $this->providerRegisterFileLocation = 'Modules/' . $this->module . '/Providers/' . $this->module . 'ServiceProvider.php';
+        }
 
         // Generate the crud
         $this
@@ -59,9 +82,10 @@ class CrudGenerator extends GeneratorCommand
             ->buildProviderWithRegister()
             ->buildMigration()
             ->buildViews()
-            ->buildRoute();
+            ->buildRoute()
+        ;
 
-        $this->info('Created Successfully.');
+        info('CRUD Generated Successfully.');
 
         return true;
     }
@@ -70,11 +94,18 @@ class CrudGenerator extends GeneratorCommand
     {
         $controllerPath = $this->_getControllerPath($this->name);
 
-        if ($this->files->exists($controllerPath) && $this->ask('Already exist Controller. Do you want overwrite (y/n)?', 'y') == 'n') {
-            return $this;
+        if ($this->files->exists($controllerPath)) {
+
+            $confirmed = confirm(
+                label: 'Already exist Controller. Do you want overwrite?',
+                default: false
+            );
+            if (!$confirmed) {
+                return $this;
+            }
         }
 
-        $this->info('Creating Controller ...');
+        warning('Creating Controller');
 
         $replace = $this->buildReplacements();
 
@@ -93,11 +124,19 @@ class CrudGenerator extends GeneratorCommand
     {
         $modelPath = $this->_getModelPath($this->name);
 
-        if ($this->files->exists($modelPath) && $this->ask('Already exist Model. Do you want overwrite (y/n)?', 'y') == 'n') {
-            return $this;
-        }
+        if ($this->files->exists($modelPath)) {
 
-        $this->info('Creating Model ...');
+            $confirmed = confirm(
+                label: 'Already exist model. Do you want overwrite?',
+                default: false
+            );
+            if (!$confirmed) {
+                return $this;
+            }
+        }
+        warning('Creating Model');
+
+
 
         // Make the models attributes and replacement
         $replace = array_merge($this->buildReplacements(), $this->modelReplacements());
@@ -116,11 +155,17 @@ class CrudGenerator extends GeneratorCommand
     {
         $requestPath = $this->_getRequestPath($this->name);
 
-        if ($this->files->exists($requestPath) && $this->ask('Already exist Request. Do you want overwrite (y/n)?', 'y') == 'n') {
-            return $this;
-        }
+        if ($this->files->exists($requestPath)) {
 
-        $this->info('Creating Request ...');
+            $confirmed = confirm(
+                label: 'Already exist request. Do you want overwrite?',
+                default: false
+            );
+            if (!$confirmed) {
+                return $this;
+            }
+        }
+        warning('Creating Request');
 
         // Make the models attributes and replacement
         $replace = array_merge($this->buildReplacements(), $this->requestReplacements());
@@ -141,12 +186,21 @@ class CrudGenerator extends GeneratorCommand
         $repositoryPath = $this->_getRepositoryPath($this->name);
 
         $baseRepository = $this->baseRepositoryFileLocation;
-        $this->write($baseRepository, $this->getStub('BaseRepository'));;
-        if ($this->files->exists($repositoryPath) && $this->ask('Already exist Repository. Do you want overwrite (y/n)?', 'y') == 'n') {
-            return $this;
-        }
+        $this->write($baseRepository, $this->getStub('BaseRepository'));
 
-        $this->info('Creating Repository ...');
+
+
+        if ($this->files->exists($repositoryPath)) {
+
+            $confirmed = confirm(
+                label: 'Already exist repository. Do you want overwrite?',
+                default: false
+            );
+            if (!$confirmed) {
+                return $this;
+            }
+        }
+        warning('Creating Repository');
 
         // Make the models attributes and replacement
         $replace = $this->buildReplacements();
@@ -170,12 +224,18 @@ class CrudGenerator extends GeneratorCommand
         $this->write($baseInterface, $this->getStub('BaseInterface'));
 
 
-        if ($this->files->exists($interfacePath) && $this->ask('Already exist Interface. Do you want overwrite (y/n)?', 'y') == 'n') {
-            return $this;
+        if ($this->files->exists($interfacePath)) {
+
+            $confirmed = confirm(
+                label: 'Already exist interface. Do you want overwrite?',
+                default: false
+            );
+            if (!$confirmed) {
+                return $this;
+            }
         }
+        warning('Creating Interface');
 
-
-        $this->info('Creating Interface ...');
 
         // Make the models attributes and replacement
         $replace = $this->buildReplacements();
@@ -332,10 +392,13 @@ class CrudGenerator extends GeneratorCommand
     private function buildMigration()
     {
         $migrationPath = $this->_getMigrationPath($this->name);
-        if ($this->files->exists($migrationPath) && $this->ask('Already exist Migration. Do you want overwrite (y/n)?', 'y') == 'n') {
+        $exisingPath = $this->migrationIsExist();
+        if ($exisingPath['status'] && $this->ask('Already exist Migration. Do you want overwrite (y/n)?', 'y') == 'n') {
             return $this;
         }
-
+        if ($exisingPath['status']) {
+            $migrationPath = $exisingPath['path'];
+        }
         $this->info('Creating Migration ...');
 
         // Make the models attributes and replacement
@@ -350,6 +413,31 @@ class CrudGenerator extends GeneratorCommand
         $this->write($migrationPath, $modelTemplate);
 
         return $this;
+    }
+
+    private function migrationIsExist()
+    {
+        $result = [
+            'status' => false,
+            'path' => '',
+        ];
+        $expected_file = "create_{$this->table}_table";
+        $migrationFiles = scandir(database_path('migrations'));
+        $migrationFiles = array_filter($migrationFiles, function ($file) {
+            return pathinfo($file, PATHINFO_EXTENSION) === 'php';
+        });
+
+        foreach ($migrationFiles as $file) {
+
+            if (str_contains($file, $expected_file)) {
+                return [
+                    'status' => true,
+                    'path' => database_path('migrations/' . $file),
+                ];
+            }
+        }
+
+        return $result;
     }
 
 

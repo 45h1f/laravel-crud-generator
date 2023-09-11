@@ -8,12 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('{{table}}', function (Blueprint $table) {
-            $table->id();
-            {{up}}
-            $table->timestamp('updated_at')->useCurrent();
-            $table->timestamp('created_at')->useCurrent();
-        });
+        if (!Schema::hasTable('{{table}}')){
+            Schema::create('{{table}}', function (Blueprint $table) {
+                $table->id();
+                {{up}}
+                $table->timestamp('updated_at')->useCurrent();
+                $table->timestamp('created_at')->useCurrent();
+            });
+        }
     }
 
     public function down(): void

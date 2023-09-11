@@ -3,6 +3,7 @@
 namespace Ashiful\Crud\Commands;
 
 use Ashiful\Crud\ModelGenerator;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
@@ -243,7 +244,7 @@ abstract class GeneratorCommand extends Command
             if ($this->layout == 'layouts.app') {
                 $this->files->copy($this->getStub('layouts/app', false), $this->_getLayoutPath());
             } else {
-                throw new \Exception("{$this->layout} layout not found!");
+                throw new Exception("{$this->layout} layout not found!");
             }
         }
     }
