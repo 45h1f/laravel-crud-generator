@@ -23,12 +23,6 @@ class CrudGenerator extends GeneratorCommand
 
     public function handle()
     {
-//        info('Hello');
-//        note('Hello');
-//        warning('Hello');
-//        error('Hello');
-//        alert('Hello');
-//exit;
         $this->table = text(
             label: 'What is the table name?',
             required: 'table name is required',
@@ -82,8 +76,7 @@ class CrudGenerator extends GeneratorCommand
             ->buildProviderWithRegister()
             ->buildMigration()
             ->buildViews()
-            ->buildRoute()
-        ;
+            ->buildRoute();
 
         info('CRUD Generated Successfully.');
 
@@ -105,7 +98,6 @@ class CrudGenerator extends GeneratorCommand
             }
         }
 
-        warning('Creating Controller');
 
         $replace = $this->buildReplacements();
 
@@ -116,6 +108,8 @@ class CrudGenerator extends GeneratorCommand
         );
 
         $this->write($controllerPath, $controllerTemplate);
+
+        warning('Controller Generated');
 
         return $this;
     }
@@ -134,8 +128,6 @@ class CrudGenerator extends GeneratorCommand
                 return $this;
             }
         }
-        warning('Creating Model');
-
 
 
         // Make the models attributes and replacement
@@ -147,6 +139,8 @@ class CrudGenerator extends GeneratorCommand
         );
 
         $this->write($modelPath, $modelTemplate);
+
+        warning('Model Generated');
 
         return $this;
     }
@@ -165,7 +159,6 @@ class CrudGenerator extends GeneratorCommand
                 return $this;
             }
         }
-        warning('Creating Request');
 
         // Make the models attributes and replacement
         $replace = array_merge($this->buildReplacements(), $this->requestReplacements());
@@ -178,6 +171,8 @@ class CrudGenerator extends GeneratorCommand
 
         $this->write($requestPath, $requestTemplate);
 
+        warning('Request Generated');
+
         return $this;
     }
 
@@ -187,7 +182,6 @@ class CrudGenerator extends GeneratorCommand
 
         $baseRepository = $this->baseRepositoryFileLocation;
         $this->write($baseRepository, $this->getStub('BaseRepository'));
-
 
 
         if ($this->files->exists($repositoryPath)) {
@@ -200,7 +194,6 @@ class CrudGenerator extends GeneratorCommand
                 return $this;
             }
         }
-        warning('Creating Repository');
 
         // Make the models attributes and replacement
         $replace = $this->buildReplacements();
@@ -212,6 +205,8 @@ class CrudGenerator extends GeneratorCommand
         );
 
         $this->write($repositoryPath, $requestTemplate);
+
+        warning('Repository Generated');
 
         return $this;
     }
@@ -234,7 +229,6 @@ class CrudGenerator extends GeneratorCommand
                 return $this;
             }
         }
-        warning('Creating Interface');
 
 
         // Make the models attributes and replacement
@@ -247,6 +241,8 @@ class CrudGenerator extends GeneratorCommand
         );
 
         $this->write($interfacePath, $requestTemplate);
+
+        warning('Interface Generated');
 
         return $this;
     }
@@ -346,7 +342,7 @@ class CrudGenerator extends GeneratorCommand
 
     protected function buildViews()
     {
-        $this->info('Creating Views ...');
+
 
         $tableHead = "\n";
         $tableBody = "\n";
@@ -380,6 +376,7 @@ class CrudGenerator extends GeneratorCommand
 
             $this->write($this->_getViewPath($view), $viewTemplate);
         }
+        warning('View Generated');
 
         return $this;
     }
@@ -393,13 +390,22 @@ class CrudGenerator extends GeneratorCommand
     {
         $migrationPath = $this->_getMigrationPath($this->name);
         $exisingPath = $this->migrationIsExist();
-        if ($exisingPath['status'] && $this->ask('Already exist Migration. Do you want overwrite (y/n)?', 'y') == 'n') {
-            return $this;
+
+        if ($exisingPath['status']) {
+
+            $confirmed = confirm(
+                label: 'Already exist Migration. Do you want overwrite?',
+                default: false
+            );
+            if (!$confirmed) {
+                return $this;
+            }
         }
+
+
         if ($exisingPath['status']) {
             $migrationPath = $exisingPath['path'];
         }
-        $this->info('Creating Migration ...');
 
         // Make the models attributes and replacement
         $replace = array_merge($this->buildReplacements(), $this->migrationReplacements());
@@ -411,6 +417,8 @@ class CrudGenerator extends GeneratorCommand
         );
 
         $this->write($migrationPath, $modelTemplate);
+
+        warning('Migration Generated');
 
         return $this;
     }
