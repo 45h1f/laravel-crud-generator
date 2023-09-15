@@ -67,16 +67,23 @@ class CrudGenerator extends GeneratorCommand
         }
 
         // Generate the crud
+
         $this
             ->buildController()
             ->buildModel()
             ->buildRequest()
+            ->buildFactory()
+            ->buildSeeder()
+            ->buildPolicy()
+            ->buildDataTable()
             ->buildRepository()
             ->buildInterface()
             ->buildProviderWithRegister()
             ->buildMigration()
+            ->buildComponent()
             ->buildViews()
-            ->buildRoute();
+            ->buildRoute()
+            ->buildTest();
 
         info('CRUD Generated Successfully.');
 
@@ -172,6 +179,127 @@ class CrudGenerator extends GeneratorCommand
         $this->write($requestPath, $requestTemplate);
 
         warning('Request Generated');
+
+        return $this;
+    }
+
+    protected function buildFactory()
+    {
+        $factoryPath = $this->_getFactoryPath($this->name);
+
+        if ($this->files->exists($factoryPath)) {
+
+            $confirmed = confirm(
+                label: 'Already exist factory. Do you want overwrite?',
+                default: false
+            );
+            if (!$confirmed) {
+                return $this;
+            }
+        }
+
+
+        $replace = array_merge($this->buildReplacements(), $this->modelReplacements());
+        $modelTemplate = str_replace(
+            array_keys($replace),
+            array_values($replace),
+            $this->getStub('Factory')
+        );
+
+        $this->write($factoryPath, $modelTemplate);
+
+        warning('Factory Generated');
+
+        return $this;
+    }
+
+    protected function buildSeeder()
+    {
+        $seederPath = $this->_getSeedPath($this->name);
+
+        if ($this->files->exists($seederPath)) {
+
+            $confirmed = confirm(
+                label: 'Already exist Seeder. Do you want overwrite?',
+                default: false
+            );
+            if (!$confirmed) {
+                return $this;
+            }
+        }
+
+
+        $replace = array_merge($this->buildReplacements(), $this->modelReplacements());
+        $modelTemplate = str_replace(
+            array_keys($replace),
+            array_values($replace),
+            $this->getStub('Seeder')
+        );
+
+        $this->write($seederPath, $modelTemplate);
+
+        warning('Seeder Generated');
+
+        return $this;
+    }
+
+    protected function buildPolicy()
+    {
+        $policyPath = $this->_getPolicyPath($this->name);
+
+        if ($this->files->exists($policyPath)) {
+
+            $confirmed = confirm(
+                label: 'Already exist Policy. Do you want overwrite?',
+                default: false
+            );
+            if (!$confirmed) {
+                return $this;
+            }
+        }
+
+
+        // Make the models attributes and replacement
+        $replace = array_merge($this->buildReplacements(), $this->modelReplacements());
+        $modelTemplate = str_replace(
+            array_keys($replace),
+            array_values($replace),
+            $this->getStub('Policy')
+        );
+
+        $this->write($policyPath, $modelTemplate);
+
+        warning('Policy Generated');
+
+        return $this;
+    }
+
+    protected function buildDataTable()
+    {
+        $policyPath = $this->_getDataTablePath($this->name);
+
+        if ($this->files->exists($policyPath)) {
+
+            $confirmed = confirm(
+                label: 'Already exist DataTable. Do you want overwrite?',
+                default: false
+            );
+            if (!$confirmed) {
+                return $this;
+            }
+        }
+
+
+        $replace = array_merge($this->buildReplacements(), $this->datatableReplacements());
+        $modelTemplate = str_replace(
+            array_keys($replace),
+            array_values($replace),
+            $this->getStub('DataTable')
+        );
+
+        $this->write($policyPath, $modelTemplate);
+
+        warning('DataTable Generated');
 
         return $this;
     }
@@ -340,6 +468,38 @@ class CrudGenerator extends GeneratorCommand
         return $this;
     }
 
+    protected function buildTest()
+    {
+        $testPath = $this->_getTastPath($this->name);
+
+
+        $replace = $this->buildReplacements();
+
+        $controllerTemplate = str_replace(
+            array_keys($replace),
+            array_values($replace),
+            $this->getStub('Test')
+        );
+
+        $this->write($testPath, $controllerTemplate);
+
+        warning('Controller Generated');
+
+
+        return $this;
+    }
+
+    protected function buildComponent()
+    {
+        foreach (['action', 'input-error', 'input-label', 'status', 'text-input'] as $view) {
+
+            $this->write($this->_getComponentPath($view), $this->getStub("components/{$view}"));
+        }
+        warning('Component Generated');
+
+        return $this;
+    }
+
     protected function buildViews()
     {
 
@@ -407,7 +567,6 @@ class CrudGenerator extends GeneratorCommand
             $migrationPath = $exisingPath['path'];
         }
 
-        // Make the models attributes and replacement
         $replace = array_merge($this->buildReplacements(), $this->migrationReplacements());
 
         $modelTemplate = str_replace(

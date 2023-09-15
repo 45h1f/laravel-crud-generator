@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputArgument;
+use Yajra\DataTables\Html\Column;
 
 abstract class GeneratorCommand extends Command
 {
@@ -37,6 +38,14 @@ abstract class GeneratorCommand extends Command
 
     protected $requestNamespace = 'App\Http\Requests';
 
+    protected $factoryNamespace = 'Database\Factories';
+
+    protected $seederNamespace = 'Database\Seeders';
+
+    protected $policyNamespace = 'App\Policies';
+
+    protected $datatableNamespace = 'App\DataTables';
+
     protected $repositoryNamespace = 'App\Repositories';
 
     protected $interfaceNamespace = 'App\Interfaces';
@@ -46,6 +55,9 @@ abstract class GeneratorCommand extends Command
     protected $providerNamespace = 'App\Providers';
 
     protected $migratePath = 'database\migrations';
+
+    protected $testNamespace = 'Tests\Feature';
+    protected $testPath = 'tests/Feature';
 
     protected $layout = 'layouts.app';
 
@@ -119,6 +131,11 @@ abstract class GeneratorCommand extends Command
         return $this->path($this->_getNamespacePath($this->controllerNamespace) . "{$name}Controller.php");
     }
 
+    protected function _getTastPath($name)
+    {
+        return $this->makeDirectory(base_path($this->_getNamespacePath($this->testPath) . "{$name}ControllerTest.php"));
+    }
+
     protected function _getModelPath($name)
     {
         // $name = strtolower(Str::plural($name));
@@ -128,6 +145,26 @@ abstract class GeneratorCommand extends Command
     protected function _getRequestPath($name)
     {
         return $this->makeDirectory($this->path($this->_getNamespacePath($this->requestNamespace) . "{$name}Request.php"));
+    }
+
+    protected function _getFactoryPath($name)
+    {
+        return $this->makeDirectory($this->path($this->_getNamespacePath($this->factoryNamespace) . "{$name}Factory.php"));
+    }
+
+    protected function _getSeedPath($name)
+    {
+        return $this->makeDirectory($this->path($this->_getNamespacePath($this->seederNamespace) . "{$name}Seeder.php"));
+    }
+
+    protected function _getPolicyPath($name)
+    {
+        return $this->makeDirectory($this->path($this->_getNamespacePath($this->policyNamespace) . "{$name}Policy.php"));
+    }
+
+    protected function _getDataTablePath($name)
+    {
+        return $this->makeDirectory($this->path($this->_getNamespacePath($this->datatableNamespace) . "{$name}DataTable.php"));
     }
 
     protected function _getRepositoryPath($name)
@@ -169,6 +206,11 @@ abstract class GeneratorCommand extends Command
         }
     }
 
+    protected function _getComponentPath($view)
+    {
+        return $this->makeDirectory(resource_path("/views/components/{$view}.blade.php"));
+    }
+
     protected function buildReplacements()
     {
         $viewPath = Str::kebab($this->name);
@@ -179,6 +221,7 @@ abstract class GeneratorCommand extends Command
         return [
             '{{layout}}' => $this->layout,
             '{{modelName}}' => $this->name,
+            '{{table}}' => $this->table,
             '{{modelTitle}}' => Str::title(Str::snake($this->name, ' ')),
             '{{modelNamespace}}' => $this->modelNamespace,
             '{{repositoryNamespace}}' => $this->repositoryNamespace,
@@ -186,6 +229,11 @@ abstract class GeneratorCommand extends Command
             '{{requestNamespace}}' => $this->requestNamespace,
             '{{controllerNamespace}}' => $this->controllerNamespace,
             '{{providerNamespace}}' => $this->providerNamespace,
+            '{{factoryNamespace}}' => $this->factoryNamespace,
+            '{{policyNamespace}}' => $this->policyNamespace,
+            '{{seederNamespace}}' => $this->seederNamespace,
+            '{{testNamespace}}' => $this->testNamespace,
+            '{{datatableNamespace}}' => $this->datatableNamespace,
             '{{modelNamePluralLowerCase}}' => Str::camel(Str::plural($this->name)),
             '{{modelNamePluralUpperCase}}' => ucfirst(Str::plural($this->name)),
             '{{modelNameLowerCase}}' => Str::camel($this->name),
@@ -406,6 +454,31 @@ abstract class GeneratorCommand extends Command
         return [
             '{{table}}' => $table,
             '{{up}}' => $tableSchema,
+        ];
+    }
+
+    protected function datatableReplacements()
+    {
+
+        $columns = [];
+
+        foreach ($this->getColumns() as $value) {
+            $columns[] = $value->Field;
+        }
+
+        $columns = Arr::except($columns, $this->unwantedColumns);
+
+
+        $tableSchema = '';
+        foreach ($columns as $column) {
+            if (!in_array($column, ['id', 'created_at', 'updated_at'])) {
+                $tableSchema .= "Column::make('{$column}'),";
+            }
+        }
+        $table = $this->table;
+        return [
+            '{{table}}' => $table,
+            '{{datatable}}' => $tableSchema,
         ];
     }
 

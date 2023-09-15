@@ -1,0 +1,108 @@
+<?php
+
+namespace {{testNamespace}};
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use {{modelNamespace}}\{{modelName}};
+use Tests\TestCase;
+
+class {{modelName}}ControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+  public function test_can_create_post()
+      {
+          $postData = [
+              'title' => 'Test Post',
+              'content' => 'This is a test post content.',
+          ];
+
+          $response = $this->post('/posts', $postData);
+
+          $response->assertStatus(201);
+
+          $this->assertDatabaseHas('posts', $postData);
+
+          // Check if the create route exists
+          $this->assertRouteExists('posts.create');
+      }
+
+      public function test_can_read_post()
+      {
+          $post = Post::factory()->create();
+
+          $response = $this->get("/posts/{$post->id}");
+
+          $response->assertStatus(200)
+              ->assertJson([
+                  'title' => $post->title,
+                  'content' => $post->content,
+              ]);
+
+          // Check if the show route exists
+          $this->assertRouteExists('posts.show', $post->id);
+
+          // Check if the post show view is being used
+          $response->assertViewIs('posts.show');
+      }
+
+      public function test_can_update_post()
+      {
+          $post = Post::factory()->create();
+          $newData = [
+              'title' => 'Updated Title',
+              'content' => 'Updated content.',
+          ];
+
+          $response = $this->put("/posts/{$post->id}", $newData);
+
+          $response->assertStatus(200);
+
+          $this->assertDatabaseHas('posts', $newData);
+
+          // Check if the edit route exists
+          $this->assertRouteExists('posts.edit', $post->id);
+
+          // Check if the post edit view is being used
+          $response->assertViewIs('posts.edit');
+      }
+
+      public function test_can_delete_post()
+      {
+          $post = Post::factory()->create();
+
+          $response = $this->delete("/posts/{$post->id}");
+
+          $response->assertStatus(204);
+
+          $this->assertDatabaseMissing('posts', ['id' => $post->id]);
+
+          // Check if the destroy route exists
+          $this->assertRouteExists('posts.destroy', $post->id);
+      }
+
+    public function test_can_view_all_posts()
+    {
+        $posts = Post::factory()->count(5)->create();
+
+        $response = $this->get('/posts');
+
+        $response->assertStatus(200);
+
+        foreach ($posts as $post) {
+            $response->assertSee($post->title);
+            // Add more assertions for other visible post attributes as needed.
+        }
+
+        // Check if the index route exists
+        $this->assertRouteExists('posts.index');
+
+        // Check if the index view is being used
+        $response->assertViewIs('posts.index');
+    }
+
+      protected function assertRouteExists($routeName, $parameters = [])
+      {
+          $this->assertTrue(app('router')->has($routeName, $parameters), "Route {$routeName} does not exist.");
+      }
+}

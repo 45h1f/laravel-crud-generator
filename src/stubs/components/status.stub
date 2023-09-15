@@ -1,0 +1,4 @@
+@props(['status' => false])
+<span class="badge rounded-pill bg-{{$status?'success':'danger'}}  p-1">
+    {{$status?'Approved':'Pending'}}
+</span>

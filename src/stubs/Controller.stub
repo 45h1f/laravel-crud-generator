@@ -3,6 +3,7 @@
 namespace {{controllerNamespace}};
 
 use {{modelNamespace}}\{{modelName}};
+use {{datatableNamespace}}\{{modelName}}DataTable;
 use {{requestNamespace}}\{{modelName}}Request;
 use {{interfaceNamespace}}\{{modelName}}RepositoryInterface;
 use App\Http\Controllers\Controller;
@@ -18,15 +19,14 @@ class {{modelName}}Controller extends Controller
         $this->{{modelNamePluralLowerCase}}Repository = ${{modelNamePluralLowerCase}}Repository;
    }
 
-    public function index(): View
+    public function index({{modelName}}DataTable ${{modelName}}DataTable): View
     {
-        ${{modelNamePluralLowerCase}} = $this->{{modelNamePluralLowerCase}}Repository->allWithPaginate();
-        return view('{{modelView}}.index', compact('{{modelNamePluralLowerCase}}'));
+     return ${{modelName}}DataTable->render('{{modelView}}.index');
     }
 
     public function create(): View
     {
-        ${{modelNameLowerCase}} = new {{modelName}}();
+        ${{modelNameLowerCase}} =  $this->{{modelNamePluralLowerCase}}Repository->newObject();
         return view('{{modelView}}.create', compact('{{modelNameLowerCase}}'));
     }
 

@@ -1,0 +1,31 @@
+@props(['items' => []])
+<div class="dropdown ms-auto">
+    <div      data-bs-toggle="dropdown"
+               aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg"
+
+             height="1em"
+             viewBox="0 0 128 512">
+            <path
+                d="M64 360a56 56 0 1 0 0 112 56 56 0 1 0 0-112zm0-160a56 56 0 1 0 0 112 56 56 0 1 0 0-112zM120 96A56 56 0 1 0 8 96a56 56 0 1 0 112 0z"/>
+        </svg>
+    </div>
+
+
+    <ul class="dropdown-menu">
+        @foreach($items as $item)
+            <li>
+                @if(isset($item['method']) && $item['method']=='DELETE')
+                    <form action="{{$item['route']}}" method="post">
+                        @method('DELETE')
+                        @csrf
+                        <button class="dropdown-item confirm_btn" type="submit"
+                        >{{$item['text']}}</button>
+                    </form>
+                @else
+                    <a href="{{$item['route']}}" class="dropdown-item">{{$item['text']}}</a>
+                @endif
+            </li>
+        @endforeach
+    </ul>
+</div>

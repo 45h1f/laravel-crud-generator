@@ -27,6 +27,9 @@ class CrudServiceProvider extends ServiceProvider
             __DIR__ . '/stubs/Controller.stub' => base_path('stubs/crud/Controller.stub'),
             __DIR__ . '/stubs/Migration.stub' => base_path('stubs/crud/Migration.stub'),
             __DIR__ . '/stubs/Model.stub' => base_path('stubs/crud/Model.stub'),
+            __DIR__ . '/stubs/Factory.stub' => base_path('stubs/crud/Factory.stub'),
+            __DIR__ . '/stubs/Seeder.stub' => base_path('stubs/crud/Seeder.stub'),
+            __DIR__ . '/stubs/Policy.stub' => base_path('stubs/crud/Policy.stub'),
             __DIR__ . '/stubs/Repository.stub' => base_path('stubs/crud/Repository.stub'),
             __DIR__ . '/stubs/Request.stub' => base_path('stubs/crud/Request.stub'),
         ], 'crud');

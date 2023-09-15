@@ -1,0 +1,4 @@
+@props(['for'=>null])
+@error($for)
+<span  class="invalid-feedback" role="alert">{{ $message }}</span>
+@enderror

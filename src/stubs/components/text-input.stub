@@ -1,0 +1,41 @@
+@props(['type' => 'text', 'name'=>'name', 'value' => null, 'label' => null, 'help' => null, 'icon' => null])
+
+@php
+    $class = 'basic-input form-control rounded-1';
+    $label_class = $attributes->has('required') ? 'required' : null;
+    if($errors->has($name)){
+        $class .=  ' is-invalid';
+        $label_class .= ' text-danger';
+    }
+    if ($attributes->has('maxlength')){
+        $class .= ' maxlength';
+    }
+    $attributes = $attributes->merge(['class' => $class, 'id' => nameToId($name)]);
+    $required = $attributes->has('required');
+    $options = iterator_to_array($attributes->getIterator(), true);
+
+@endphp
+
+@if($label != false)
+    <x-input-label :for="$attributes->get('id')" :class="$label_class"
+                   :value="$label ?? ($slot->isNotEmpty() ? $slot : $attributes->get('placeholder'))" :help="$help"/>
+@endif
+@if($icon)
+
+    <div class="input-group flex-nowrap">
+        @endif
+        @if($type == 'password' or $type=='file')
+            {{ html()->$type($name)->attributes($options) }}
+        @else
+            {{ html()->input($type, $name, $value)->attributes($options) }}
+        @endif
+        @if($icon)
+
+    <span class="input-group-text">
+        <img src="{{ asset('img/icons/' . $icon . '.svg') }}" alt="icon"/>
+    </span>
+    </div>
+@endif
+<x-input-error :for="$name"/>
+
+

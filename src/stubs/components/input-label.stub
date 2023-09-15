@@ -1,0 +1,10 @@
+@props(['value', 'help' => null])
+
+<label {{ $attributes->merge(['class' =>'basic-label']) }}>
+    {{ $value ?? $slot }}
+
+    @if($help)
+        <x-help :help="$help" />
+    @endif
+</label>
+
