@@ -11,11 +11,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputArgument;
-use Yajra\DataTables\Html\Column;
 
 abstract class GeneratorCommand extends Command
 {
     protected $files;
+
     protected $unwantedColumns = [
         'id',
         'password',
@@ -56,7 +56,12 @@ abstract class GeneratorCommand extends Command
 
     protected $migratePath = 'database\migrations';
 
+    protected $factoryPath = 'database\factories';
+
+    protected $seederPath = 'database\seeders';
+
     protected $testNamespace = 'Tests\Feature';
+
     protected $testPath = 'tests/Feature';
 
     protected $layout = 'layouts.app';
@@ -70,7 +75,6 @@ abstract class GeneratorCommand extends Command
     protected $providerFileLocation = 'app/Providers/RepositoryServiceProvider.php';
 
     protected $providerRegisterFileLocation = 'app/Providers/AppServiceProvider.php';
-
 
     public function __construct(Filesystem $files)
     {
@@ -138,7 +142,6 @@ abstract class GeneratorCommand extends Command
 
     protected function _getModelPath($name)
     {
-        // $name = strtolower(Str::plural($name));
         return $this->makeDirectory($this->path($this->_getNamespacePath($this->modelNamespace) . "{$name}.php"));
     }
 
@@ -149,12 +152,12 @@ abstract class GeneratorCommand extends Command
 
     protected function _getFactoryPath($name)
     {
-        return $this->makeDirectory($this->path($this->_getNamespacePath($this->factoryNamespace) . "{$name}Factory.php"));
+        return $this->makeDirectory(base_path($this->_getNamespacePath($this->factoryPath) . "{$name}Factory.php"));
     }
 
     protected function _getSeedPath($name)
     {
-        return $this->makeDirectory($this->path($this->_getNamespacePath($this->seederNamespace) . "{$name}Seeder.php"));
+        return $this->makeDirectory(base_path($this->_getNamespacePath($this->seederPath) . "{$name}Seeder.php"));
     }
 
     protected function _getPolicyPath($name)
@@ -180,6 +183,7 @@ abstract class GeneratorCommand extends Command
     protected function _getMigrationPath($name)
     {
         $name = strtolower(Str::plural($name));
+
         return $this->makeDirectory(base_path($this->_getNamespacePath($this->migratePath) . date('Y_m_d_hmi_') . 'create_' . "{$name}_table.php"));
     }
 
@@ -192,12 +196,12 @@ abstract class GeneratorCommand extends Command
 
     private function _getLayoutPath()
     {
-        return $this->makeDirectory(resource_path("/views/layouts/app.blade.php"));
+        return $this->makeDirectory(resource_path('/views/layouts/app.blade.php'));
     }
 
     protected function _getViewPath($view)
     {
-        $name = Str::kebab($this->name);
+        $name = Str::kebab($this->table);
 
         if (!empty($this->module)) {
             return $this->makeDirectory($this->path('Modules/' . $this->module . "/Resources/views/{$name}/{$view}.blade.php"));
@@ -213,7 +217,7 @@ abstract class GeneratorCommand extends Command
 
     protected function buildReplacements()
     {
-        $viewPath = Str::kebab($this->name);
+        $viewPath = $this->table;
         if (!empty($this->module)) {
             $viewPath = strtolower($this->module) . '::' . $viewPath;
         }
@@ -241,7 +245,6 @@ abstract class GeneratorCommand extends Command
             '{{modelView}}' => $viewPath,
         ];
     }
-
 
     protected function getField($title, $column, $type = 'form-field')
     {
@@ -357,18 +360,16 @@ abstract class GeneratorCommand extends Command
             /** @var array $filterColumns Exclude the unwanted columns */
             $filterColumns = $this->getFilteredColumns();
 
-            // Add quotes to the unwanted columns for fillable
             array_walk($filterColumns, function (&$value) {
                 $value = "'" . $value . "'";
             });
 
-            // CSV format
             return implode(',', $filterColumns);
         };
 
         $properties .= "\n *";
 
-        list($relations, $properties) = (new ModelGenerator($this->table, $properties, $this->modelNamespace))->getEloquentRelations();
+        [$relations, $properties] = (new ModelGenerator($this->table, $properties, $this->modelNamespace))->getEloquentRelations();
 
         return [
             '{{fillable}}' => $fillable(),
@@ -395,11 +396,9 @@ abstract class GeneratorCommand extends Command
 
         $rules = function () use ($rulesArray) {
             $rules = '';
-            // Exclude the unwanted rulesArray
             $rulesArray = Arr::except($rulesArray, $this->unwantedColumns);
-            // Make rulesArray
             foreach ($rulesArray as $col => $rule) {
-                $rules .= "\n\t\t'{$col}' => '{$rule}',";
+                $rules .= "'{$col}' => '{$rule}',\n";
             }
 
             return $rules;
@@ -407,6 +406,61 @@ abstract class GeneratorCommand extends Command
 
         return [
             '{{rules}}' => $rules(),
+        ];
+    }
+
+    protected function factoryReplacements()
+    {
+
+        $columns = [];
+
+        foreach ($this->getColumns() as $value) {
+            $columns[] = $value->Field;
+        }
+
+        $columns = Arr::except($columns, $this->unwantedColumns);
+
+        $tableFactory = '';
+        foreach ($columns as $column) {
+            if (!in_array($column, ['id', 'created_at', 'updated_at'])) {
+                $tableFactory .= "'{$column}'=>\$this->faker->text(),\n";
+            }
+        }
+        $table = $this->table;
+
+        return [
+            '{{table}}' => $table,
+            '{{factory}}' => $tableFactory,
+        ];
+    }
+
+    protected function testReplacements()
+    {
+
+        $columns = [];
+
+        foreach ($this->getColumns() as $value) {
+            $columns[] = $value->Field;
+        }
+
+        $columns = Arr::except($columns, $this->unwantedColumns);
+
+        $testData = '';
+        foreach ($columns as $column) {
+            if (!in_array($column, ['id', 'created_at', 'updated_at'])) {
+                $testData .= "'{$column}'=>1,\n";
+            }
+        }
+
+        return [
+            '{{testData}}' => $testData,
+        ];
+    }
+
+    protected function seederReplacements()
+    {
+        return [
+            '{{seed}}' => "{$this->name}::factory(10)->create();",
         ];
     }
 
@@ -419,9 +473,9 @@ abstract class GeneratorCommand extends Command
             $type = str_replace('(', '', $value->Type);
             $type = str_replace(')', '', $type);
             $type = preg_replace('/[0-9]+/', '', $type);
-            if ($type == "varchar") {
+            if ($type == 'varchar') {
                 $type = 'string';
-            } elseif ($type == "int") {
+            } elseif ($type == 'int') {
                 $type = 'integer';
             }
             if ($value->Null != 'NO') {
@@ -434,7 +488,6 @@ abstract class GeneratorCommand extends Command
         }
 
         $rulesArray = Arr::except($rulesArray, $this->unwantedColumns);
-
 
         $tableSchema = '';
         foreach ($rulesArray as $col => $rule) {
@@ -451,6 +504,7 @@ abstract class GeneratorCommand extends Command
         }
 
         $table = $this->table;
+
         return [
             '{{table}}' => $table,
             '{{up}}' => $tableSchema,
@@ -468,14 +522,14 @@ abstract class GeneratorCommand extends Command
 
         $columns = Arr::except($columns, $this->unwantedColumns);
 
-
         $tableSchema = '';
         foreach ($columns as $column) {
             if (!in_array($column, ['id', 'created_at', 'updated_at'])) {
-                $tableSchema .= "Column::make('{$column}'),";
+                $tableSchema .= "Column::make('{$column}'),\n";
             }
         }
         $table = $this->table;
+
         return [
             '{{table}}' => $table,
             '{{datatable}}' => $tableSchema,
@@ -486,7 +540,6 @@ abstract class GeneratorCommand extends Command
     {
         return trim($this->argument('name'));
     }
-
 
     protected function getModuleInput()
     {
@@ -499,7 +552,6 @@ abstract class GeneratorCommand extends Command
             ['name', InputArgument::REQUIRED, 'The name of the table'],
         ];
     }
-
 
     protected function tableExists()
     {

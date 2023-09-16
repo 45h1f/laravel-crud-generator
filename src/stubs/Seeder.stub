@@ -1,13 +1,13 @@
 <?php
 
 namespace {{seederNamespace}};
-
+use {{modelNamespace}}\{{modelName}};
 use Illuminate\Database\Seeder;
 
 class {{modelName}}Seeder extends Seeder
 {
     public function run(): void
     {
-        //
+        {{seed}}
     }
 }

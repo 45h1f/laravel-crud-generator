@@ -13,15 +13,13 @@ class ModelGenerator
     private $functions = null;
 
     private $table = null;
+
     private $properties = null;
+
     private $modelNamespace = 'App';
 
     /**
      * ModelGenerator constructor.
-     *
-     * @param string $table
-     * @param string $properties
-     * @param string $modelNamespace
      */
     public function __construct(string $table, string $properties, string $modelNamespace)
     {
@@ -56,9 +54,6 @@ class ModelGenerator
     }
 
     /**
-     * @param $relation
-     * @param $tableKeys
-     *
      * @return string
      */
     private function _getEloquent($relation, $tableKeys)
@@ -80,16 +75,11 @@ class ModelGenerator
     }
 
     /**
-     * @param string $relation
-     * @param string $table
-     * @param string $foreign_key
-     * @param string $local_key
-     *
      * @return string
      */
     private function _getFunction(string $relation, string $table, string $foreign_key, string $local_key)
     {
-        list($model, $relationName) = $this->_getModelName($table, $relation);
+        [$model, $relationName] = $this->_getModelName($table, $relation);
         $relClass = ucfirst($relation);
 
         switch ($relation) {
@@ -115,8 +105,6 @@ class ModelGenerator
     /**
      * Get the name relation and model.
      *
-     * @param $name
-     * @param $relation
      *
      * @return array
      */
@@ -163,7 +151,6 @@ SQL;
     /**
      * Get all Keys from table.
      *
-     * @param $table
      *
      * @return array
      */

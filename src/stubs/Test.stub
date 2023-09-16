@@ -10,99 +10,119 @@ class {{modelName}}ControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-  public function test_can_create_post()
+  public function test_can_create_{{modelNameLowerCase}}()
       {
-          $postData = [
-              'title' => 'Test Post',
-              'content' => 'This is a test post content.',
+          ${{modelNameLowerCase}}Data = [
+            {{testData}}
           ];
 
-          $response = $this->post('/posts', $postData);
+          $response = $this->post('/{{modelRoute}}', ${{modelNameLowerCase}}Data);
 
-          $response->assertStatus(201);
+          $response->assertStatus(302);
 
-          $this->assertDatabaseHas('posts', $postData);
+          $this->assertDatabaseHas('{{modelRoute}}', ${{modelNameLowerCase}}Data);
 
           // Check if the create route exists
-          $this->assertRouteExists('posts.create');
+          $this->assertRouteExists('{{modelRoute}}.create');
       }
 
-      public function test_can_read_post()
+      public function test_can_read_{{modelNameLowerCase}}()
       {
-          $post = Post::factory()->create();
+          ${{modelNameLowerCase}} = {{modelName}}::factory()->create();
 
-          $response = $this->get("/posts/{$post->id}");
-
-          $response->assertStatus(200)
-              ->assertJson([
-                  'title' => $post->title,
-                  'content' => $post->content,
-              ]);
-
-          // Check if the show route exists
-          $this->assertRouteExists('posts.show', $post->id);
-
-          // Check if the post show view is being used
-          $response->assertViewIs('posts.show');
-      }
-
-      public function test_can_update_post()
-      {
-          $post = Post::factory()->create();
-          $newData = [
-              'title' => 'Updated Title',
-              'content' => 'Updated content.',
-          ];
-
-          $response = $this->put("/posts/{$post->id}", $newData);
+          $response = $this->get("/{{modelRoute}}/{${{modelNameLowerCase}}->id}");
 
           $response->assertStatus(200);
 
-          $this->assertDatabaseHas('posts', $newData);
+          // Check if the show route exists
+          $this->assertRouteExists('{{modelRoute}}.show', ${{modelNameLowerCase}}->id);
 
-          // Check if the edit route exists
-          $this->assertRouteExists('posts.edit', $post->id);
-
-          // Check if the post edit view is being used
-          $response->assertViewIs('posts.edit');
+          // Check if the {{modelNameLowerCase}} show view is being used
+          $response->assertViewIs('{{modelRoute}}.show');
       }
 
-      public function test_can_delete_post()
+      public function test_can_update_{{modelNameLowerCase}}()
       {
-          $post = Post::factory()->create();
+          ${{modelNameLowerCase}} = {{modelName}}::factory()->create();
+          $newData = [
+             {{testData}}
+          ];
 
-          $response = $this->delete("/posts/{$post->id}");
+          $response = $this->put("/{{modelRoute}}/{${{modelNameLowerCase}}->id}", $newData);
 
-          $response->assertStatus(204);
+          $response->assertStatus(302);
 
-          $this->assertDatabaseMissing('posts', ['id' => $post->id]);
+          $this->assertDatabaseHas('{{modelRoute}}', $newData);
+
+
+          $this->assertRouteExists('{{modelRoute}}.edit', ${{modelNameLowerCase}}->id);
+
+          $response = $this->get("/tags/{${{modelNameLowerCase}}->id}/edit", $newData);
+
+          $response->assertViewIs('{{modelRoute}}.edit');
+      }
+
+      public function test_can_delete_{{modelNameLowerCase}}()
+      {
+          ${{modelNameLowerCase}} = {{modelName}}::factory()->create();
+
+          $response = $this->delete("/{{modelRoute}}/{${{modelNameLowerCase}}->id}");
+
+          $response->assertStatus(302);
+
+          $this->assertDatabaseMissing('{{modelRoute}}', ['id' => ${{modelNameLowerCase}}->id]);
 
           // Check if the destroy route exists
-          $this->assertRouteExists('posts.destroy', $post->id);
+          $this->assertRouteExists('{{modelRoute}}.destroy', ${{modelNameLowerCase}}->id);
       }
 
-    public function test_can_view_all_posts()
-    {
-        $posts = Post::factory()->count(5)->create();
+    public function test_can_access_index_page()
+        {
+            ${{modelRoute}} = {{modelName}}::factory()->count(5)->create();
 
-        $response = $this->get('/posts');
+            $response = $this->get('/{{modelRoute}}');
 
-        $response->assertStatus(200);
+            $response->assertStatus(200);
 
-        foreach ($posts as $post) {
-            $response->assertSee($post->title);
-            // Add more assertions for other visible post attributes as needed.
+            foreach (${{modelRoute}} as ${{modelNameLowerCase}}) {
+                $response->assertSee(${{modelNameLowerCase}}->id);
+                // Add more assertions for other visible {{modelNameLowerCase}} attributes as needed.
+            }
+
+            // Check if the index route exists
+            $this->assertRouteExists('{{modelRoute}}.index');
+
+            // Check if the index view is being used
+            $response->assertViewIs('{{modelRoute}}.index');
         }
 
-        // Check if the index route exists
-        $this->assertRouteExists('posts.index');
+        public function test_can_access_create_page()
+        {
+            // Make a GET request to the create page
+            $response = $this->get(route('{{modelRoute}}.create'));
 
-        // Check if the index view is being used
-        $response->assertViewIs('posts.index');
-    }
+            // Assert that the create page loads successfully (HTTP status 200)
+            $response->assertStatus(200);
 
-      protected function assertRouteExists($routeName, $parameters = [])
+            // Optionally, you can also assert that the create view is being used
+            $response->assertViewIs('{{modelRoute}}.create');
+        }
+
+        public function test_can_access_edit_page()
+        {
+     ${{modelNameLowerCase}} = {{modelName}}::factory()->create();
+
+            $response = $this->get(route('{{modelRoute}}.edit', ['{{modelNameLowerCase}}' =>    ${{modelNameLowerCase}}->id ]));
+
+            // Assert that the edit page loads successfully (HTTP status 200)
+            $response->assertStatus(200);
+
+            // Optionally, you can also assert that the edit view is being used
+            $response->assertViewIs('{{modelRoute}}.edit');
+        }
+
+      protected function assertRouteExists($routeName)
       {
-          $this->assertTrue(app('router')->has($routeName, $parameters), "Route {$routeName} does not exist.");
+          $this->assertTrue(app('router')->has($routeName), "Route {$routeName} does not exist.");
       }
 }

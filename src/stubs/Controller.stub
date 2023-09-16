@@ -2,12 +2,11 @@
 
 namespace {{controllerNamespace}};
 
-use {{modelNamespace}}\{{modelName}};
 use {{datatableNamespace}}\{{modelName}}DataTable;
 use {{requestNamespace}}\{{modelName}}Request;
 use {{interfaceNamespace}}\{{modelName}}RepositoryInterface;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 class {{modelName}}Controller extends Controller
@@ -19,9 +18,9 @@ class {{modelName}}Controller extends Controller
         $this->{{modelNamePluralLowerCase}}Repository = ${{modelNamePluralLowerCase}}Repository;
    }
 
-    public function index({{modelName}}DataTable ${{modelName}}DataTable): View
+    public function index({{modelName}}DataTable ${{modelNameLowerCase}}DataTable): View|JsonResponse
     {
-     return ${{modelName}}DataTable->render('{{modelView}}.index');
+     return ${{modelNameLowerCase}}DataTable->render('{{modelView}}.index');
     }
 
     public function create(): View

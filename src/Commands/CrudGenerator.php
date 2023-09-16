@@ -2,18 +2,14 @@
 
 namespace Ashiful\Crud\Commands;
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Nwidart\Modules\Facades\Module;
-use Illuminate\Support\Facades\Schema;
-use function Laravel\Prompts\alert;
+
 use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\note;
-use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
-
 
 class CrudGenerator extends GeneratorCommand
 {
@@ -49,24 +45,20 @@ class CrudGenerator extends GeneratorCommand
             }
         }
 
-
         // Build the class name from table name
         $this->name = $this->_buildClassName();
 
-
         if (!empty($this->module)) {
-            $this->controllerNamespace = "Modules\\" . $this->module . "\Http\Controllers";
-            $this->modelNamespace = "Modules\\" . $this->module . "\Models";
-            $this->requestNamespace = "Modules\\" . $this->module . "\Http\Requests";
-            $this->repositoryNamespace = "Modules\\" . $this->module . "\Repositories";
-            $this->interfaceNamespace = "Modules\\" . $this->module . "\Interfaces";
-            $this->migratePath = "Modules\\" . $this->module . "\Database\Migrations";
-            $this->providerNamespace = "Modules\\" . $this->module . "\Providers";
+            $this->controllerNamespace = 'Modules\\' . $this->module . "\Http\Controllers";
+            $this->modelNamespace = 'Modules\\' . $this->module . "\Models";
+            $this->requestNamespace = 'Modules\\' . $this->module . "\Http\Requests";
+            $this->repositoryNamespace = 'Modules\\' . $this->module . "\Repositories";
+            $this->interfaceNamespace = 'Modules\\' . $this->module . "\Interfaces";
+            $this->migratePath = 'Modules\\' . $this->module . "\Database\Migrations";
+            $this->providerNamespace = 'Modules\\' . $this->module . "\Providers";
             $this->providerFileLocation = 'Modules/' . $this->module . '/Providers/RepositoryServiceProvider.php';
             $this->providerRegisterFileLocation = 'Modules/' . $this->module . '/Providers/' . $this->module . 'ServiceProvider.php';
         }
-
-        // Generate the crud
 
         $this
             ->buildController()
@@ -84,7 +76,6 @@ class CrudGenerator extends GeneratorCommand
             ->buildViews()
             ->buildRoute()
             ->buildTest();
-
         info('CRUD Generated Successfully.');
 
         return true;
@@ -97,7 +88,7 @@ class CrudGenerator extends GeneratorCommand
         if ($this->files->exists($controllerPath)) {
 
             $confirmed = confirm(
-                label: 'Already exist Controller. Do you want overwrite?',
+                label: 'Already exist controller. Do you want overwrite?',
                 default: false
             );
             if (!$confirmed) {
@@ -105,16 +96,13 @@ class CrudGenerator extends GeneratorCommand
             }
         }
 
-
         $replace = $this->buildReplacements();
 
-        $controllerTemplate = str_replace(
+        $this->write($controllerPath, str_replace(
             array_keys($replace),
             array_values($replace),
             $this->getStub('Controller')
-        );
-
-        $this->write($controllerPath, $controllerTemplate);
+        ));
 
         warning('Controller Generated');
 
@@ -136,16 +124,14 @@ class CrudGenerator extends GeneratorCommand
             }
         }
 
-
-        // Make the models attributes and replacement
         $replace = array_merge($this->buildReplacements(), $this->modelReplacements());
-        $modelTemplate = str_replace(
+
+
+        $this->write($modelPath, str_replace(
             array_keys($replace),
             array_values($replace),
             $this->getStub('Model')
-        );
-
-        $this->write($modelPath, $modelTemplate);
+        ));
 
         warning('Model Generated');
 
@@ -167,16 +153,13 @@ class CrudGenerator extends GeneratorCommand
             }
         }
 
-        // Make the models attributes and replacement
         $replace = array_merge($this->buildReplacements(), $this->requestReplacements());
 
-        $requestTemplate = str_replace(
+        $this->write($requestPath, str_replace(
             array_keys($replace),
             array_values($replace),
             $this->getStub('Request')
-        );
-
-        $this->write($requestPath, $requestTemplate);
+        ));
 
         warning('Request Generated');
 
@@ -198,15 +181,13 @@ class CrudGenerator extends GeneratorCommand
             }
         }
 
+        $replace = array_merge($this->buildReplacements(), $this->factoryReplacements());
 
-        $replace = array_merge($this->buildReplacements(), $this->modelReplacements());
-        $modelTemplate = str_replace(
+        $this->write($factoryPath, str_replace(
             array_keys($replace),
             array_values($replace),
             $this->getStub('Factory')
-        );
-
-        $this->write($factoryPath, $modelTemplate);
+        ));
 
         warning('Factory Generated');
 
@@ -228,15 +209,13 @@ class CrudGenerator extends GeneratorCommand
             }
         }
 
+        $replace = array_merge($this->buildReplacements(), $this->seederReplacements());
 
-        $replace = array_merge($this->buildReplacements(), $this->modelReplacements());
-        $modelTemplate = str_replace(
+        $this->write($seederPath, str_replace(
             array_keys($replace),
             array_values($replace),
             $this->getStub('Seeder')
-        );
-
-        $this->write($seederPath, $modelTemplate);
+        ));
 
         warning('Seeder Generated');
 
@@ -258,8 +237,6 @@ class CrudGenerator extends GeneratorCommand
             }
         }
 
-
-        // Make the models attributes and replacement
         $replace = array_merge($this->buildReplacements(), $this->modelReplacements());
         $modelTemplate = str_replace(
             array_keys($replace),
@@ -289,7 +266,6 @@ class CrudGenerator extends GeneratorCommand
             }
         }
 
-
         $replace = array_merge($this->buildReplacements(), $this->datatableReplacements());
         $modelTemplate = str_replace(
             array_keys($replace),
@@ -311,7 +287,6 @@ class CrudGenerator extends GeneratorCommand
         $baseRepository = $this->baseRepositoryFileLocation;
         $this->write($baseRepository, $this->getStub('BaseRepository'));
 
-
         if ($this->files->exists($repositoryPath)) {
 
             $confirmed = confirm(
@@ -323,16 +298,13 @@ class CrudGenerator extends GeneratorCommand
             }
         }
 
-        // Make the models attributes and replacement
         $replace = $this->buildReplacements();
 
-        $requestTemplate = str_replace(
+        $this->write($repositoryPath, str_replace(
             array_keys($replace),
             array_values($replace),
             $this->getStub('Repository')
-        );
-
-        $this->write($repositoryPath, $requestTemplate);
+        ));
 
         warning('Repository Generated');
 
@@ -346,7 +318,6 @@ class CrudGenerator extends GeneratorCommand
         $baseInterface = $this->baseInterfaceFileLocation;
         $this->write($baseInterface, $this->getStub('BaseInterface'));
 
-
         if ($this->files->exists($interfacePath)) {
 
             $confirmed = confirm(
@@ -358,17 +329,14 @@ class CrudGenerator extends GeneratorCommand
             }
         }
 
-
-        // Make the models attributes and replacement
         $replace = $this->buildReplacements();
 
-        $requestTemplate = str_replace(
+
+        $this->write($interfacePath, str_replace(
             array_keys($replace),
             array_values($replace),
             $this->getStub('Interface')
-        );
-
-        $this->write($interfacePath, $requestTemplate);
+        ));
 
         warning('Interface Generated');
 
@@ -380,7 +348,6 @@ class CrudGenerator extends GeneratorCommand
         $providerFileLocation = $this->providerFileLocation;
         $providerRegisterFileLocation = $this->providerRegisterFileLocation;
 
-
         if (!$this->files->exists($providerFileLocation)) {
             $replace = $this->buildReplacements();
 
@@ -390,7 +357,6 @@ class CrudGenerator extends GeneratorCommand
                 $this->getStub('RepositoryServiceProvider')
             );
             $this->write($providerFileLocation, $RepositoryServiceProviderTemplate);
-
 
             $regProviderText = '        $this->app->register(RepositoryServiceProvider::class);';
             $providerRegisterContent = file_get_contents($this->providerRegisterFileLocation);
@@ -409,6 +375,7 @@ class CrudGenerator extends GeneratorCommand
             }
         }
         $this->registerInRepo();
+
         return $this;
     }
 
@@ -442,13 +409,11 @@ class CrudGenerator extends GeneratorCommand
 
         }
 
-
     }
 
     protected function buildRoute()
     {
         $name = Str::kebab(Str::plural($this->name));
-
 
         if (!empty($this->module)) {
             $route = 'Route::resource("' . $name . '", \'' . $this->name . 'Controller\');';
@@ -465,6 +430,7 @@ class CrudGenerator extends GeneratorCommand
             $route_content .= $route;
             file_put_contents($route_path, $route_content);
         }
+
         return $this;
     }
 
@@ -473,18 +439,15 @@ class CrudGenerator extends GeneratorCommand
         $testPath = $this->_getTastPath($this->name);
 
 
-        $replace = $this->buildReplacements();
+        $replace = array_merge($this->buildReplacements(), $this->testReplacements());
 
-        $controllerTemplate = str_replace(
+        $this->write($testPath, str_replace(
             array_keys($replace),
             array_values($replace),
             $this->getStub('Test')
-        );
+        ));
 
-        $this->write($testPath, $controllerTemplate);
-
-        warning('Controller Generated');
-
+        warning('Test Generated');
 
         return $this;
     }
@@ -502,7 +465,6 @@ class CrudGenerator extends GeneratorCommand
 
     protected function buildViews()
     {
-
 
         $tableHead = "\n";
         $tableBody = "\n";
@@ -549,6 +511,7 @@ class CrudGenerator extends GeneratorCommand
     private function buildMigration()
     {
         $migrationPath = $this->_getMigrationPath($this->name);
+
         $exisingPath = $this->migrationIsExist();
 
         if ($exisingPath['status']) {
@@ -561,7 +524,6 @@ class CrudGenerator extends GeneratorCommand
                 return $this;
             }
         }
-
 
         if ($exisingPath['status']) {
             $migrationPath = $exisingPath['path'];
@@ -606,6 +568,4 @@ class CrudGenerator extends GeneratorCommand
 
         return $result;
     }
-
-
 }
